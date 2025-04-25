@@ -4,11 +4,14 @@ import { useState } from "react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import SmartFarmingDemo from "@/components/smart-farming-demo"
 import Image from "next/image"
-import NavigationButton from "@/components/navigation-button"
+import { useMobile } from "@/hooks/use-mobile"
 
 export default function ApplicationsModule() {
   const [selectedApplication, setSelectedApplication] = useState("agriculture")
+  const isMobile = useMobile()
 
   const applications = {
     agriculture: {
@@ -21,7 +24,7 @@ export default function ApplicationsModule() {
       location: "Central Luzon and Batangas province",
       color: "from-green-500 to-emerald-700",
       icon: "🌾",
-      image: "/images/batangas-smart-farming.jpg",
+      image: "/images/batangas-smart-farming.png",
     },
     healthcare: {
       title: "Healthcare Diagnostics",
@@ -32,7 +35,7 @@ export default function ApplicationsModule() {
       location: "Rural health units across the archipelago",
       color: "from-red-500 to-rose-700",
       icon: "🏥",
-      image: "/images/ph-healthcare-rural.jpg",
+      image: "/images/ph-healthcare-rural.png",
     },
     traffic: {
       title: "Traffic Management",
@@ -43,7 +46,7 @@ export default function ApplicationsModule() {
       location: "Metro Manila, Cebu City, and Davao",
       color: "from-amber-500 to-orange-700",
       icon: "🚦",
-      image: "/images/ph-cv-traffic.jpg",
+      image: "/images/ph-cv-traffic.png",
     },
     language: {
       title: "Filipino NLP",
@@ -54,7 +57,7 @@ export default function ApplicationsModule() {
       location: "Nationwide digital services",
       color: "from-purple-500 to-indigo-700",
       icon: "💬",
-      image: "/images/filipino-sentiment-analysis.jpg",
+      image: "/images/filipino-sentiment-analysis.png",
     },
     disaster: {
       title: "Disaster Response",
@@ -65,7 +68,7 @@ export default function ApplicationsModule() {
       location: "Typhoon-prone regions including Eastern Visayas",
       color: "from-blue-500 to-cyan-700",
       icon: "🌪️",
-      image: "/images/ph-disaster-response.jpg",
+      image: "/images/ph-disaster-response.png",
     },
   }
 
@@ -222,7 +225,9 @@ export default function ApplicationsModule() {
                       </div>
                     </div>
 
-                    <Button className="bg-amber-600 hover:bg-amber-700">Learn More</Button>
+                    <Button className="bg-amber-600 hover:bg-amber-700" size={isMobile ? "sm" : "default"}>
+                      Learn More
+                    </Button>
                   </div>
                 </motion.div>
               </div>
@@ -231,7 +236,130 @@ export default function ApplicationsModule() {
         </Card>
       </motion.div>
 
-      <NavigationButton nextModule="quiz" label="Take the Quiz" />
+      {/* Application Selection Tabs */}
+      <div className="mb-12">
+        <h2 className="text-2xl font-bold text-white mb-6">Explore Applications</h2>
+
+        <Tabs defaultValue={selectedApplication} onValueChange={setSelectedApplication}>
+          <TabsList className="bg-slate-800 w-full justify-start overflow-x-auto">
+            {Object.entries(applications).map(([key, app]) => (
+              <TabsTrigger key={key} value={key} className={`min-w-max ${isMobile ? "text-xs py-1 px-2" : ""}`}>
+                <span className="mr-2">{app.icon}</span> {isMobile ? app.title.split(" ")[0] : app.title}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+      </div>
+
+      {/* Smart Farming AI Demo */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.6 }}
+        className="mb-12"
+      >
+        <h2 className="text-2xl font-bold text-white mb-6">AI-Powered Smart Farming</h2>
+        <SmartFarmingDemo />
+      </motion.div>
+
+      {/* Success Stories */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.6 }}
+        className="mb-12"
+      >
+        <h2 className="text-2xl font-bold text-white mb-6">Success Stories</h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card className="bg-slate-800/50 border-slate-700">
+            <CardContent className="p-6">
+              <div className="flex items-center mb-4">
+                <div className="w-12 h-12 rounded-full bg-green-600 flex items-center justify-center text-white text-xl mr-4">
+                  🚜
+                </div>
+                <h3 className="text-xl font-bold text-white">Batangas Rice Farmers</h3>
+              </div>
+
+              <p className="text-white/80 mb-4">
+                A group of rice farmers in Batangas increased their yield by 23% after adopting AI-powered soil analysis
+                and weather prediction technology developed by local researchers.
+              </p>
+
+              <div className="flex justify-between items-center">
+                <span className="text-amber-400 font-medium">20+ farms participating</span>
+                <Button variant="outline" size={isMobile ? "sm" : "default"}>
+                  Read Story
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-slate-800/50 border-slate-700">
+            <CardContent className="p-6">
+              <div className="flex items-center mb-4">
+                <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white text-xl mr-4">
+                  🏥
+                </div>
+                <h3 className="text-xl font-bold text-white">Rural Telehealth</h3>
+              </div>
+
+              <p className="text-white/80 mb-4">
+                AI diagnostic tools have enabled healthcare workers in remote Visayan islands to screen for common
+                diseases without requiring patients to travel to major cities.
+              </p>
+
+              <div className="flex justify-between items-center">
+                <span className="text-amber-400 font-medium">5,000+ patients served</span>
+                <Button variant="outline" size={isMobile ? "sm" : "default"}>
+                  Read Story
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </motion.div>
+
+      {/* Future Directions */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.8 }}
+      >
+        <Card className="bg-slate-800/50 border-slate-700">
+          <CardContent className="p-6">
+            <h2 className="text-2xl font-bold text-white mb-4">Future Directions</h2>
+
+            <p className="text-white/80 mb-6">
+              Batangas State University is at the forefront of developing AI applications tailored to Philippine needs.
+              Current research focuses on:
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-slate-700/50 p-4 rounded-lg">
+                <h3 className="font-semibold text-white mb-2">Local Language AI</h3>
+                <p className="text-sm text-white/80">
+                  Developing models that better understand the nuances of Filipino languages and dialects.
+                </p>
+              </div>
+
+              <div className="bg-slate-700/50 p-4 rounded-lg">
+                <h3 className="font-semibold text-white mb-2">Climate Resilience</h3>
+                <p className="text-sm text-white/80">
+                  AI systems to predict and mitigate the impact of typhoons and other natural disasters.
+                </p>
+              </div>
+
+              <div className="bg-slate-700/50 p-4 rounded-lg">
+                <h3 className="font-semibold text-white mb-2">Accessible AI</h3>
+                <p className="text-sm text-white/80">
+                  Low-resource AI solutions that can run on basic hardware available in rural communities.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
     </div>
   )
 }

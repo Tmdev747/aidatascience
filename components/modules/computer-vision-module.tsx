@@ -9,7 +9,6 @@ import { Slider } from "@/components/ui/slider"
 import { Loader2, Upload } from "lucide-react"
 import { describeImageAction } from "@/app/actions/ai-actions"
 import Image from "next/image"
-import NavigationButton from "@/components/navigation-button"
 
 interface Detection {
   id: number
@@ -200,7 +199,7 @@ export default function ComputerVisionModule() {
                           onError={(e) => {
                             // Fallback if the specific image doesn't exist
                             const target = e.target as HTMLImageElement
-                            target.src = "/images/ph-cv-traffic.jpg"
+                            target.src = "/images/ph-cv-traffic.png"
                           }}
                         />
                       </div>
@@ -407,21 +406,21 @@ export default function ComputerVisionModule() {
                 "AI cameras monitor traffic flow and detect violations in Metro Manila and other urban centers.",
               icon: "🚦",
               color: "from-red-500 to-orange-700",
-              image: "/images/ph-cv-traffic.jpg",
+              image: "/images/ph-cv-traffic.png",
             },
             {
               title: "Agricultural Monitoring",
               description: "Drones with computer vision assess crop health and detect pests in Philippine farms.",
               icon: "🌾",
               color: "from-green-500 to-emerald-700",
-              image: "/images/batangas-smart-farming.jpg",
+              image: "/images/batangas-smart-farming.png",
             },
             {
               title: "Disaster Assessment",
               description: "Satellite imagery analysis to assess typhoon damage and plan recovery efforts.",
               icon: "🛰️",
               color: "from-blue-500 to-cyan-700",
-              image: "/images/ph-disaster-response.jpg",
+              image: "/images/ph-disaster-response.png",
             },
           ].map((app, index) => (
             <motion.div
@@ -462,7 +461,7 @@ export default function ComputerVisionModule() {
               <div className="md:col-span-1">
                 <div className="rounded-lg overflow-hidden relative aspect-square">
                   <Image
-                    src="/images/ph-cv-traffic.jpg"
+                    src="/images/ph-cv-traffic.png"
                     alt="Traffic Management System"
                     fill
                     className="object-cover"
@@ -499,8 +498,6 @@ export default function ComputerVisionModule() {
           </CardContent>
         </Card>
       </motion.div>
-
-      <NavigationButton nextModule="applications" label="Explore Philippine Applications" />
     </div>
   )
 }

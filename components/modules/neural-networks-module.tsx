@@ -8,7 +8,7 @@ import { Slider } from "@/components/ui/slider"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Loader2 } from "lucide-react"
 import { generateAIResponseAction } from "@/app/actions/ai-actions"
-import NavigationButton from "@/components/navigation-button"
+import QRCode from "@/components/qr-code"
 
 export default function NeuralNetworksModule() {
   const [networkType, setNetworkType] = useState("feedforward")
@@ -18,11 +18,20 @@ export default function NeuralNetworksModule() {
   const [explanation, setExplanation] = useState<string>("")
   const [isLoadingExplanation, setIsLoadingExplanation] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [demoUrl, setDemoUrl] = useState("")
 
   // Generate neural network structure
   useEffect(() => {
     generateNetwork()
   }, [networkType])
+
+  // Set the demo URL based on the current hostname
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const baseUrl = window.location.origin
+      setDemoUrl(`${baseUrl}/demos/digit-recognition`)
+    }
+  }, [])
 
   const generateNetwork = () => {
     let networkLayers: { neurons: number; active: boolean[] }[] = []
@@ -451,8 +460,8 @@ export default function NeuralNetworksModule() {
             <div className="p-6">
               <h2 className="text-2xl font-bold text-white mb-2">Try It Yourself</h2>
               <p className="text-white/80 mb-4">
-                Experience how a neural network recognizes handwritten digits. Draw a number in the box and see the
-                network in action.
+                Experience how a neural network recognizes handwritten digits. Scan the QR code to access the
+                interactive demo on your mobile device.
               </p>
               <div className="space-y-4 mb-6">
                 <div className="flex items-center">
@@ -468,24 +477,14 @@ export default function NeuralNetworksModule() {
                   <span className="text-white/80">See the prediction result</span>
                 </div>
               </div>
-              <Button className="bg-purple-600 hover:bg-purple-700">Launch Interactive Demo</Button>
             </div>
 
             <div className="bg-slate-900 p-6 flex items-center justify-center">
-              <div className="text-center">
-                <div className="w-48 h-48 border-2 border-dashed border-purple-500 rounded-lg mx-auto mb-4 flex items-center justify-center">
-                  <span className="text-white/50">Draw here</span>
-                </div>
-                <div className="text-white font-bold text-lg">
-                  Prediction: <span className="text-purple-400">-</span>
-                </div>
-              </div>
+              <QRCode url={demoUrl} size={180} title="Neural Network Demo" />
             </div>
           </div>
         </Card>
       </motion.div>
-
-      <NavigationButton nextModule="nlp" label="Explore Natural Language Processing" />
     </div>
   )
 }

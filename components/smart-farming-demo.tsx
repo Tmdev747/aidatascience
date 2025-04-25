@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Loader2 } from "lucide-react"
-import { getAgricultureRecommendationAction } from "@/app/actions/ai-actions"
 
 export default function SmartFarmingDemo() {
   const [crop, setCrop] = useState("rice")
@@ -41,23 +40,103 @@ export default function SmartFarmingDemo() {
     { value: "volcanic", label: "Volcanic" },
   ]
 
+  // Predefined recommendations based on selections
+  const recommendationData = {
+    rice: {
+      batangas: {
+        clay: {
+          plantingSchedule:
+            "Best planting time is from May to June for wet season and November to December for dry season.",
+          wateringRecommendations:
+            "Maintain 2-3 cm water depth during vegetative stage, increasing to 5-7 cm during reproductive stage.",
+          fertilizers: "Apply complete fertilizer (14-14-14) at planting and urea 30-35 days after transplanting.",
+          pestManagement: "Monitor for rice black bugs and stem borers. Use integrated pest management techniques.",
+          harvestTiming: "Harvest 30 days after 80-85% of grains have turned golden yellow.",
+          localConsiderations:
+            "Batangas clay soil retains water well. Consider drainage systems during heavy monsoon rains to prevent flooding.",
+        },
+        loam: {
+          plantingSchedule: "Optimal planting from June to July for wet season and December to January for dry season.",
+          wateringRecommendations:
+            "Maintain 3-5 cm water depth throughout growing season with more frequent irrigation.",
+          fertilizers: "Apply balanced NPK fertilizer (16-20-0) at planting and urea 25-30 days after transplanting.",
+          pestManagement: "Watch for rice hispa and leafhoppers. Use yellow sticky traps and resistant varieties.",
+          harvestTiming:
+            "Harvest when 80-85% of grains have turned golden yellow, typically 115-120 days after planting.",
+          localConsiderations:
+            "Batangas loam soil has good drainage. Implement water conservation practices during dry spells.",
+        },
+      },
+      "central-luzon": {
+        clay: {
+          plantingSchedule:
+            "Plant from May 15 to June 15 for wet season and November 15 to December 15 for dry season.",
+          wateringRecommendations: "Maintain 3-5 cm water depth with careful monitoring during flowering stage.",
+          fertilizers:
+            "Apply complete fertilizer (14-14-14) at planting and ammonium sulfate 40 days after transplanting.",
+          pestManagement:
+            "Monitor for rice blast and bacterial leaf blight. Use resistant varieties and proper spacing.",
+          harvestTiming: "Harvest 28-30 days after flowering when 80% of grains are mature.",
+          localConsiderations:
+            "Central Luzon clay soils are prone to cracking during dry periods. Maintain consistent moisture.",
+        },
+      },
+    },
+    corn: {
+      batangas: {
+        clay: {
+          plantingSchedule: "Plant from April to May for wet season and October to November for dry season.",
+          wateringRecommendations: "Irrigate every 7-10 days, ensuring soil is moist but not waterlogged.",
+          fertilizers: "Apply complete fertilizer (14-14-14) at planting and urea when plants are knee-high.",
+          pestManagement: "Monitor for corn borers and armyworms. Use Trichogramma cards for biological control.",
+          harvestTiming: "Harvest 85-95 days after planting when kernels are firm and milky.",
+          localConsiderations:
+            "Batangas clay soil requires careful water management for corn. Consider raised beds for better drainage.",
+        },
+      },
+    },
+  }
+
   const getRecommendations = async () => {
     setIsLoading(true)
     setError(null)
 
     try {
-      const result = await getAgricultureRecommendationAction(
-        crops.find((c) => c.value === crop)?.label || crop,
-        regions.find((r) => r.value === region)?.label || region,
-        soilTypes.find((s) => s.value === soil)?.label || soil,
-      )
+      // Simulate API call delay
+      await new Promise((resolve) => setTimeout(resolve, 1500))
 
-      if (result.success && result.data) {
-        setRecommendations(result.data)
-      } else {
-        setError("Failed to get recommendations. Please try again.")
-        setRecommendations(null)
+      // Get recommendations from our predefined data or generate fallback
+      let result: any = null
+
+      try {
+        // Try to get specific recommendation
+        result =
+          recommendationData[crop as keyof typeof recommendationData]?.[
+            region as keyof (typeof recommendationData)[keyof typeof recommendationData]
+          ]?.[
+            soil as keyof (typeof recommendationData)[keyof typeof recommendationData][keyof (typeof recommendationData)[keyof typeof recommendationData]]
+          ]
+      } catch (e) {
+        // If path doesn't exist, result will remain null
       }
+
+      // If no specific recommendation, generate a generic one
+      if (!result) {
+        const cropLabel = crops.find((c) => c.value === crop)?.label || crop
+        const regionLabel = regions.find((r) => r.value === region)?.label || region
+        const soilLabel = soilTypes.find((s) => s.value === soil)?.label || soil
+
+        result = {
+          plantingSchedule: `Optimal planting season for ${cropLabel} in ${regionLabel} is typically during the rainy season (June-August) or early dry season (November-December).`,
+          wateringRecommendations: `For ${cropLabel} in ${soilLabel} soil, maintain consistent moisture without waterlogging. Irrigate every 5-7 days depending on weather conditions.`,
+          fertilizers: `Apply balanced NPK fertilizer at planting and nitrogen-rich fertilizer during vegetative growth phase. Consider organic compost for ${soilLabel} soil improvement.`,
+          pestManagement: `Implement integrated pest management with regular monitoring. Use resistant varieties and biological controls when possible.`,
+          harvestTiming: `Harvest ${cropLabel} when fully mature, typically 90-120 days after planting depending on variety.`,
+          localConsiderations: `${regionLabel} has specific climate patterns that affect ${cropLabel} growth. Consider local weather forecasts and traditional farming knowledge for best results.`,
+        }
+      }
+
+      setRecommendations(result)
     } catch (err) {
       console.error("Error getting recommendations:", err)
       setError("An unexpected error occurred")

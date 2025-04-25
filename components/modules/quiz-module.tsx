@@ -8,7 +8,6 @@ import { Progress } from "@/components/ui/progress"
 import { useToast } from "@/hooks/use-toast"
 import { CheckCircle2, XCircle, Loader2 } from "lucide-react"
 import { generateAIResponseAction } from "@/app/actions/ai-actions"
-import NavigationButton from "@/components/navigation-button"
 
 export default function QuizModule() {
   const { toast } = useToast()
@@ -361,8 +360,6 @@ export default function QuizModule() {
           </Card>
         </motion.div>
       )}
-
-      <NavigationButton nextModule="intro" label="Back to Introduction" />
     </div>
   )
 }

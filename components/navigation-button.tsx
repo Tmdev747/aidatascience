@@ -3,48 +3,41 @@
 import { Button } from "@/components/ui/button"
 import { ChevronRight } from "lucide-react"
 import { useRouter } from "next/navigation"
-import type { ThemeColors } from "@/lib/themes"
+import { useMobile } from "@/hooks/use-mobile"
 
 interface NavigationButtonProps {
   nextModule: string
   label?: string
-  theme?: ThemeColors
 }
 
-export default function NavigationButton({ nextModule, label = "Next Module", theme }: NavigationButtonProps) {
+export default function NavigationButton({ nextModule, label = "Next Module" }: NavigationButtonProps) {
   const router = useRouter()
-
-  // Use default theme if not provided
-  const { primary = "bg-blue-600", primaryHover = "hover:bg-blue-700", buttonText = "text-white" } = theme || {}
+  const isMobile = useMobile()
 
   const handleNavigation = () => {
     // If we're using the same page with different states
     if (typeof window !== "undefined") {
+      // Scroll to top when changing modules
+      window.scrollTo(0, 0)
+
       // Dispatch a custom event that the parent component can listen for
       const event = new CustomEvent("changeModule", {
         detail: { module: nextModule },
       })
       window.dispatchEvent(event)
-
-      // If we're in an iframe, also notify the parent
-      if (window !== window.parent) {
-        window.parent.postMessage(
-          {
-            type: "changeModule",
-            module: nextModule,
-          },
-          "*",
-        )
-      }
     }
   }
 
   return (
     <Button
       onClick={handleNavigation}
-      className={`fixed bottom-16 right-6 z-50 ${primary} ${primaryHover} ${buttonText} px-6 py-6 rounded-full shadow-lg flex items-center gap-2 text-lg animate-pulse hover:animate-none`}
+      className={`fixed z-50 bg-blue-600 hover:bg-blue-700 text-white shadow-lg flex items-center gap-1 animate-pulse hover:animate-none ${
+        isMobile
+          ? "bottom-16 right-4 px-3 py-2 text-sm rounded-lg"
+          : "bottom-16 right-6 px-5 py-5 text-base rounded-full"
+      }`}
     >
-      {label} <ChevronRight className="h-5 w-5" />
+      {isMobile ? "Next" : label} <ChevronRight className={isMobile ? "h-4 w-4" : "h-5 w-5"} />
     </Button>
   )
 }

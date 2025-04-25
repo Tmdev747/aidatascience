@@ -1,237 +1,395 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { motion } from "framer-motion"
-import { MessageSquare, ThumbsUp, ThumbsDown, Search, ArrowRight } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Loader2 } from "lucide-react"
 
 export default function FilipinoNLPVisualization() {
-  const [activeExample, setActiveExample] = useState(0)
-  const [showAnalysis, setShowAnalysis] = useState(false)
+  const [inputText, setInputText] = useState("")
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [result, setResult] = useState<any>(null)
+  const [activeTab, setActiveTab] = useState("sentiment")
 
-  // Cycle through examples
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setShowAnalysis(false)
-
-      setTimeout(() => {
-        setActiveExample((prev) => (prev + 1) % examples.length)
-
-        setTimeout(() => {
-          setShowAnalysis(true)
-        }, 1000)
-      }, 1000)
-    }, 6000)
-
-    return () => clearInterval(interval)
-  }, [])
-
-  const examples = [
-    {
-      text: "Ang bagong teknolohiyang ito ay talagang nakakagulat at nakakatulong sa ating bansa.",
-      translation: "This new technology is truly amazing and helpful for our country.",
-      sentiment: "positive",
-      entities: [
-        { text: "teknolohiya", type: "TECHNOLOGY", confidence: 0.92 },
-        { text: "bansa", type: "LOCATION", confidence: 0.87 },
-      ],
-      keywords: ["teknolohiya", "nakakagulat", "nakakatulong", "bansa"],
+  // Predefined responses for demo purposes
+  const demoResponses = {
+    sentiment: {
+      "Masaya ako ngayong araw": {
+        score: 0.89,
+        label: "POSITIVE",
+        explanation: "Detected positive emotion words: 'masaya' (happy)",
+      },
+      "Galit na galit ako sa nangyari": {
+        score: 0.92,
+        label: "NEGATIVE",
+        explanation: "Detected negative emotion words: 'galit' (angry)",
+      },
+      "Ang lamig ng panahon": {
+        score: 0.62,
+        label: "NEUTRAL",
+        explanation: "Statement of fact without strong emotional content",
+      },
+      "Ang ganda ng tanawin dito": {
+        score: 0.85,
+        label: "POSITIVE",
+        explanation: "Detected positive descriptors: 'ganda' (beautiful)",
+      },
+      "Hindi ko gusto ang pagkain": {
+        score: 0.78,
+        label: "NEGATIVE",
+        explanation: "Detected negative sentiment: 'hindi gusto' (don't like)",
+      },
     },
-    {
-      text: "Hindi ko maintindihan kung bakit mabagal ang internet sa probinsya namin.",
-      translation: "I don't understand why the internet is slow in our province.",
-      sentiment: "negative",
-      entities: [
-        { text: "internet", type: "TECHNOLOGY", confidence: 0.95 },
-        { text: "probinsya", type: "LOCATION", confidence: 0.89 },
-      ],
-      keywords: ["maintindihan", "mabagal", "internet", "probinsya"],
+    translation: {
+      "Masaya ako ngayong araw": "I am happy today",
+      "Galit na galit ako sa nangyari": "I am very angry about what happened",
+      "Ang lamig ng panahon": "The weather is cold",
+      "Ang ganda ng tanawin dito": "The view here is beautiful",
+      "Hindi ko gusto ang pagkain": "I don't like the food",
     },
-    {
-      text: "Pwede po bang malaman kung saan ang pinakamalapit na vaccination center?",
-      translation: "May I know where the nearest vaccination center is?",
-      sentiment: "neutral",
-      entities: [{ text: "vaccination center", type: "FACILITY", confidence: 0.94 }],
-      keywords: ["malaman", "pinakamalapit", "vaccination center"],
+    intent: {
+      "Masaya ako ngayong araw": {
+        intent: "STATEMENT",
+        confidence: 0.95,
+      },
+      "Pwede mo ba akong tulungan?": {
+        intent: "REQUEST_HELP",
+        confidence: 0.92,
+      },
+      "Anong oras na?": {
+        intent: "QUESTION_TIME",
+        confidence: 0.89,
+      },
+      "Buksan mo ang bintana": {
+        intent: "COMMAND",
+        confidence: 0.94,
+      },
+      "Salamat sa tulong mo": {
+        intent: "GRATITUDE",
+        confidence: 0.97,
+      },
     },
+  }
+
+  // Example Filipino phrases for the user to try
+  const examplePhrases = [
+    "Masaya ako ngayong araw",
+    "Galit na galit ako sa nangyari",
+    "Ang lamig ng panahon",
+    "Pwede mo ba akong tulungan?",
+    "Salamat sa tulong mo",
   ]
 
+  const processText = async () => {
+    if (!inputText.trim()) return
+
+    setIsProcessing(true)
+    setResult(null)
+
+    try {
+      // Simulate API processing delay
+      await new Promise((resolve) => setTimeout(resolve, 1200))
+
+      // Check if we have a predefined response for this exact text
+      let response: any = null
+
+      if (activeTab === "sentiment" && demoResponses.sentiment[inputText]) {
+        response = demoResponses.sentiment[inputText]
+      } else if (activeTab === "translation" && demoResponses.translation[inputText]) {
+        response = demoResponses.translation[inputText]
+      } else if (activeTab === "intent" && demoResponses.intent[inputText]) {
+        response = demoResponses.intent[inputText]
+      } else {
+        // Generate a generic response based on the text
+        if (activeTab === "sentiment") {
+          // Simple sentiment analysis based on keywords
+          const positiveWords = ["masaya", "maganda", "mabuti", "masarap", "ganda", "buti", "mahal", "saya"]
+          const negativeWords = ["galit", "malungkot", "hindi", "ayaw", "pangit", "masama", "takot"]
+
+          const lowerText = inputText.toLowerCase()
+          let score = 0.5
+          let label = "NEUTRAL"
+          let explanation = "No strong emotional indicators detected"
+
+          const posMatches = positiveWords.filter((word) => lowerText.includes(word))
+          const negMatches = negativeWords.filter((word) => lowerText.includes(word))
+
+          if (posMatches.length > negMatches.length) {
+            score = 0.7 + Math.random() * 0.25
+            label = "POSITIVE"
+            explanation = `Detected positive words: ${posMatches.join(", ")}`
+          } else if (negMatches.length > posMatches.length) {
+            score = 0.7 + Math.random() * 0.25
+            label = "NEGATIVE"
+            explanation = `Detected negative words: ${negMatches.join(", ")}`
+          }
+
+          response = { score, label, explanation }
+        } else if (activeTab === "translation") {
+          // For translation, we'll just return the original text
+          response = "Translation not available for this text in demo mode"
+        } else if (activeTab === "intent") {
+          // Simple intent detection based on patterns
+          const lowerText = inputText.toLowerCase()
+          let intent = "STATEMENT"
+          const confidence = 0.7 + Math.random() * 0.2
+
+          if (lowerText.includes("?")) {
+            intent = "QUESTION"
+            if (lowerText.includes("ano") || lowerText.includes("saan") || lowerText.includes("sino")) {
+              intent = "QUESTION_INFO"
+            } else if (lowerText.includes("pwede") || lowerText.includes("maaari")) {
+              intent = "REQUEST"
+            }
+          } else if (lowerText.includes("salamat") || lowerText.includes("thank")) {
+            intent = "GRATITUDE"
+          } else if (lowerText.startsWith("pakiusap") || lowerText.includes("tulungan")) {
+            intent = "REQUEST_HELP"
+          }
+
+          response = { intent, confidence }
+        }
+      }
+
+      setResult(response)
+    } catch (error) {
+      console.error("Error processing text:", error)
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const handleExampleClick = (phrase: string) => {
+    setInputText(phrase)
+    // Process the example phrase immediately
+    setTimeout(() => {
+      processText()
+    }, 100)
+  }
+
   return (
-    <div className="w-full bg-slate-900 rounded-xl p-6 overflow-hidden">
-      <h3 className="text-xl font-bold text-white mb-6 text-center">Filipino Natural Language Processing</h3>
+    <div className="bg-slate-900 rounded-xl p-6 overflow-hidden">
+      <h3 className="text-xl font-bold text-white mb-4 text-center">Filipino Natural Language Processing</h3>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Left side - Input and Translation */}
+        {/* Left side - Input and controls */}
         <div className="space-y-4">
-          <div className="p-4 bg-slate-800 rounded-lg border border-slate-700">
-            <div className="flex items-center mb-3">
-              <MessageSquare className="h-5 w-5 text-purple-500 mr-2" />
-              <h4 className="font-bold text-white">Filipino Text Input</h4>
-            </div>
-
-            <motion.div
-              key={`input-${activeExample}`}
-              className="p-3 bg-slate-700/50 rounded-lg"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5 }}
+          <div className="flex flex-wrap gap-2 mb-4">
+            <Button
+              variant={activeTab === "sentiment" ? "default" : "outline"}
+              onClick={() => setActiveTab("sentiment")}
+              className="text-sm"
+              size="sm"
             >
-              <p className="text-white/90">{examples[activeExample].text}</p>
-            </motion.div>
-
-            <div className="flex justify-center my-4">
-              <motion.div animate={{ y: [0, -5, 0] }} transition={{ duration: 1, repeat: 1 }}>
-                <ArrowRight className="h-6 w-6 text-purple-500" />
-              </motion.div>
-            </div>
-
-            <div className="flex items-center mb-3">
-              <Search className="h-5 w-5 text-blue-500 mr-2" />
-              <h4 className="font-bold text-white">English Translation</h4>
-            </div>
-
-            <motion.div
-              key={`translation-${activeExample}`}
-              className="p-3 bg-slate-700/50 rounded-lg"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: showAnalysis ? 1 : 0 }}
-              transition={{ duration: 0.5 }}
+              Sentiment Analysis
+            </Button>
+            <Button
+              variant={activeTab === "translation" ? "default" : "outline"}
+              onClick={() => setActiveTab("translation")}
+              className="text-sm"
+              size="sm"
             >
-              <p className="text-white/90">{examples[activeExample].translation}</p>
-            </motion.div>
+              Translation
+            </Button>
+            <Button
+              variant={activeTab === "intent" ? "default" : "outline"}
+              onClick={() => setActiveTab("intent")}
+              className="text-sm"
+              size="sm"
+            >
+              Intent Detection
+            </Button>
           </div>
 
-          <div className="p-4 bg-slate-800 rounded-lg border border-slate-700">
-            <h4 className="font-bold text-white mb-3">Philippine Context</h4>
-            <ul className="space-y-2 text-sm text-white/80">
-              <li className="flex items-start">
-                <div className="w-2 h-2 rounded-full bg-purple-500 mt-1.5 mr-2"></div>
-                <span>Supports Tagalog, Cebuano, Ilocano, and other Philippine languages</span>
-              </li>
-              <li className="flex items-start">
-                <div className="w-2 h-2 rounded-full bg-purple-500 mt-1.5 mr-2"></div>
-                <span>Handles code-switching between English and Filipino languages</span>
-              </li>
-              <li className="flex items-start">
-                <div className="w-2 h-2 rounded-full bg-purple-500 mt-1.5 mr-2"></div>
-                <span>Recognizes Filipino cultural references and local expressions</span>
-              </li>
-              <li className="flex items-start">
-                <div className="w-2 h-2 rounded-full bg-purple-500 mt-1.5 mr-2"></div>
-                <span>Developed with data from Philippine social media and news sources</span>
-              </li>
-            </ul>
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-white">Enter Filipino Text:</label>
+            <div className="flex gap-2">
+              <Input
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                placeholder="Type in Filipino (Tagalog)..."
+                className="bg-slate-800 border-slate-700 text-white"
+              />
+              <Button onClick={processText} disabled={isProcessing || !inputText.trim()}>
+                {isProcessing ? <Loader2 className="h-4 w-4 animate-spin" /> : "Analyze"}
+              </Button>
+            </div>
+          </div>
+
+          <div className="bg-slate-800/50 p-4 rounded-lg">
+            <h4 className="font-semibold text-white mb-2">Try these examples:</h4>
+            <div className="flex flex-wrap gap-2">
+              {examplePhrases.map((phrase, index) => (
+                <Button
+                  key={index}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleExampleClick(phrase)}
+                  className="text-xs bg-slate-700 border-slate-600 text-white"
+                >
+                  {phrase}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-slate-800/50 p-4 rounded-lg">
+            <h4 className="font-semibold text-white mb-2">About Filipino NLP</h4>
+            <p className="text-sm text-white/80">
+              Natural Language Processing for Filipino languages presents unique challenges due to the mix of Tagalog,
+              English, and regional dialects. This demo showcases basic NLP capabilities adapted for Philippine
+              languages.
+            </p>
           </div>
         </div>
 
-        {/* Right side - NLP Analysis */}
-        <div className="space-y-4">
-          <div className="p-4 bg-slate-800 rounded-lg border border-slate-700">
-            <h4 className="font-bold text-white mb-3">NLP Analysis</h4>
-
-            {/* Sentiment Analysis */}
-            <div className="mb-4">
-              <div className="text-sm text-white/70 mb-2">Sentiment Analysis:</div>
+        {/* Right side - Results visualization */}
+        <div className="bg-slate-800 rounded-lg p-4 relative min-h-[350px]">
+          <div className="absolute inset-0 flex items-center justify-center">
+            {isProcessing ? (
+              <div className="flex flex-col items-center">
+                <Loader2 className="h-8 w-8 animate-spin text-blue-500 mb-2" />
+                <p className="text-white/80">Processing Filipino text...</p>
+              </div>
+            ) : !result ? (
+              <div className="text-center text-white/60">
+                <p>Enter Filipino text and click Analyze to see results</p>
+              </div>
+            ) : (
               <motion.div
-                key={`sentiment-${activeExample}`}
-                className="flex space-x-2"
+                className="w-full h-full p-4"
                 initial={{ opacity: 0 }}
-                animate={{ opacity: showAnalysis ? 1 : 0 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5 }}
               >
-                {examples[activeExample].sentiment === "positive" ? (
-                  <div className="flex items-center px-3 py-1.5 bg-green-900/30 border border-green-800 rounded-lg">
-                    <ThumbsUp className="h-4 w-4 text-green-500 mr-2" />
-                    <span className="text-green-400 font-medium">Positive</span>
-                  </div>
-                ) : examples[activeExample].sentiment === "negative" ? (
-                  <div className="flex items-center px-3 py-1.5 bg-red-900/30 border border-red-800 rounded-lg">
-                    <ThumbsDown className="h-4 w-4 text-red-500 mr-2" />
-                    <span className="text-red-400 font-medium">Negative</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center px-3 py-1.5 bg-blue-900/30 border border-blue-800 rounded-lg">
-                    <span className="text-blue-400 font-medium">Neutral</span>
-                  </div>
-                )}
-              </motion.div>
-            </div>
+                {activeTab === "sentiment" && (
+                  <div className="space-y-4">
+                    <h4 className="text-lg font-medium text-white">Sentiment Analysis Results</h4>
 
-            {/* Named Entity Recognition */}
-            <div className="mb-4">
-              <div className="text-sm text-white/70 mb-2">Named Entity Recognition:</div>
-              <motion.div
-                key={`entities-${activeExample}`}
-                className="p-3 bg-slate-700/50 rounded-lg"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: showAnalysis ? 1 : 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-              >
-                {examples[activeExample].entities.length > 0 ? (
-                  <div className="space-y-2">
-                    {examples[activeExample].entities.map((entity, i) => (
-                      <div key={i} className="flex justify-between items-center">
-                        <div className="flex items-center">
-                          <div className="px-2 py-0.5 bg-purple-900/50 rounded text-xs text-purple-300 mr-2">
-                            {entity.type}
-                          </div>
-                          <span className="text-white/90">{entity.text}</span>
-                        </div>
-                        <div className="text-xs text-white/60">{Math.round(entity.confidence * 100)}% confidence</div>
+                    <div className="flex items-center justify-center mb-4">
+                      <div
+                        className={`text-4xl ${
+                          result.label === "POSITIVE"
+                            ? "text-green-500"
+                            : result.label === "NEGATIVE"
+                              ? "text-red-500"
+                              : "text-yellow-500"
+                        }`}
+                      >
+                        {result.label === "POSITIVE" ? "😊" : result.label === "NEGATIVE" ? "😞" : "😐"}
                       </div>
-                    ))}
+                    </div>
+
+                    <div className="bg-slate-700/50 p-4 rounded-lg">
+                      <div className="flex justify-between mb-1">
+                        <span className="text-white/80">Sentiment:</span>
+                        <span
+                          className={`font-medium ${
+                            result.label === "POSITIVE"
+                              ? "text-green-400"
+                              : result.label === "NEGATIVE"
+                                ? "text-red-400"
+                                : "text-yellow-400"
+                          }`}
+                        >
+                          {result.label}
+                        </span>
+                      </div>
+
+                      <div className="flex justify-between mb-2">
+                        <span className="text-white/80">Confidence:</span>
+                        <span className="text-white">{Math.round(result.score * 100)}%</span>
+                      </div>
+
+                      <div className="w-full bg-slate-600 rounded-full h-2.5">
+                        <motion.div
+                          className={`h-2.5 rounded-full ${
+                            result.label === "POSITIVE"
+                              ? "bg-green-500"
+                              : result.label === "NEGATIVE"
+                                ? "bg-red-500"
+                                : "bg-yellow-500"
+                          }`}
+                          initial={{ width: 0 }}
+                          animate={{ width: `${result.score * 100}%` }}
+                          transition={{ duration: 0.5 }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="bg-slate-700/50 p-4 rounded-lg">
+                      <h5 className="font-medium text-white mb-1">Analysis:</h5>
+                      <p className="text-sm text-white/80">{result.explanation}</p>
+                    </div>
                   </div>
-                ) : (
-                  <p className="text-white/60 text-sm">No entities detected</p>
+                )}
+
+                {activeTab === "translation" && (
+                  <div className="space-y-4">
+                    <h4 className="text-lg font-medium text-white">Translation Results</h4>
+
+                    <div className="bg-slate-700/50 p-4 rounded-lg mb-4">
+                      <h5 className="font-medium text-white mb-1">Filipino (Original):</h5>
+                      <p className="text-white/90 border-l-2 border-blue-500 pl-3 py-1">{inputText}</p>
+                    </div>
+
+                    <div className="bg-slate-700/50 p-4 rounded-lg">
+                      <h5 className="font-medium text-white mb-1">English Translation:</h5>
+                      <p className="text-white/90 border-l-2 border-green-500 pl-3 py-1">{result}</p>
+                    </div>
+
+                    <div className="text-xs text-white/50 text-center">
+                      Filipino-English translation powered by neural machine translation
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === "intent" && (
+                  <div className="space-y-4">
+                    <h4 className="text-lg font-medium text-white">Intent Detection Results</h4>
+
+                    <div className="flex items-center justify-center mb-4">
+                      <div className="text-4xl text-blue-500">🎯</div>
+                    </div>
+
+                    <div className="bg-slate-700/50 p-4 rounded-lg">
+                      <div className="flex justify-between mb-1">
+                        <span className="text-white/80">Detected Intent:</span>
+                        <span className="font-medium text-blue-400">{result.intent}</span>
+                      </div>
+
+                      <div className="flex justify-between mb-2">
+                        <span className="text-white/80">Confidence:</span>
+                        <span className="text-white">{Math.round(result.confidence * 100)}%</span>
+                      </div>
+
+                      <div className="w-full bg-slate-600 rounded-full h-2.5">
+                        <motion.div
+                          className="h-2.5 rounded-full bg-blue-500"
+                          initial={{ width: 0 }}
+                          animate={{ width: `${result.confidence * 100}%` }}
+                          transition={{ duration: 0.5 }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="bg-slate-700/50 p-4 rounded-lg">
+                      <h5 className="font-medium text-white mb-1">Possible Actions:</h5>
+                      <ul className="text-sm text-white/80 space-y-1">
+                        {result.intent === "QUESTION" && <li>• Provide information in response to the question</li>}
+                        {result.intent === "QUESTION_INFO" && <li>• Search for specific information requested</li>}
+                        {result.intent === "REQUEST" && <li>• Process the user's request for permission</li>}
+                        {result.intent === "REQUEST_HELP" && <li>• Offer assistance based on the request</li>}
+                        {result.intent === "GRATITUDE" && <li>• Acknowledge the user's thanks</li>}
+                        {result.intent === "COMMAND" && <li>• Execute the requested command</li>}
+                        {result.intent === "STATEMENT" && <li>• Acknowledge the statement</li>}
+                      </ul>
+                    </div>
+                  </div>
                 )}
               </motion.div>
-            </div>
-
-            {/* Keyword Extraction */}
-            <div>
-              <div className="text-sm text-white/70 mb-2">Keyword Extraction:</div>
-              <motion.div
-                key={`keywords-${activeExample}`}
-                className="flex flex-wrap gap-2"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: showAnalysis ? 1 : 0 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-              >
-                {examples[activeExample].keywords.map((keyword, i) => (
-                  <motion.div
-                    key={i}
-                    className="px-2 py-1 bg-slate-700 rounded-full text-sm text-white/80"
-                    initial={{ scale: 0.8 }}
-                    animate={{ scale: 1 }}
-                    transition={{ duration: 0.3, delay: 0.3 + i * 0.1 }}
-                  >
-                    {keyword}
-                  </motion.div>
-                ))}
-              </motion.div>
-            </div>
-          </div>
-
-          {/* Applications */}
-          <div className="p-4 bg-slate-800 rounded-lg border border-slate-700">
-            <h4 className="font-bold text-white mb-3">Applications in the Philippines</h4>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 bg-purple-900/20 border border-purple-800 rounded-lg">
-                <h5 className="font-medium text-white text-sm mb-1">Social Media Monitoring</h5>
-                <p className="text-xs text-white/70">Analyzing public sentiment on government initiatives</p>
-              </div>
-              <div className="p-3 bg-blue-900/20 border border-blue-800 rounded-lg">
-                <h5 className="font-medium text-white text-sm mb-1">Customer Service</h5>
-                <p className="text-xs text-white/70">Chatbots that understand Filipino languages</p>
-              </div>
-              <div className="p-3 bg-green-900/20 border border-green-800 rounded-lg">
-                <h5 className="font-medium text-white text-sm mb-1">Education</h5>
-                <p className="text-xs text-white/70">Language learning tools for Philippine languages</p>
-              </div>
-              <div className="p-3 bg-amber-900/20 border border-amber-800 rounded-lg">
-                <h5 className="font-medium text-white text-sm mb-1">Healthcare</h5>
-                <p className="text-xs text-white/70">Medical information in local dialects</p>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </div>

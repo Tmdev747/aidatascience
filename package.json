@@ -69,7 +69,8 @@
     "@react-three/drei": "latest",
     "framer-motion": "latest",
     "@ai-sdk/groq": "latest",
-    "ai": "latest"
+    "ai": "latest",
+    "qr-code-styling": "latest"
   },
   "devDependencies": {
     "@types/node": "^22",

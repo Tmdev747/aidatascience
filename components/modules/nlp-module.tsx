@@ -10,7 +10,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Loader2 } from "lucide-react"
 import { analyzeTextAction } from "@/app/actions/ai-actions"
 import Image from "next/image"
-import NavigationButton from "@/components/navigation-button"
 
 interface AnalysisResult {
   word: string
@@ -374,7 +373,7 @@ export default function NLPModule() {
                 <div className="bg-slate-700/30 rounded-lg overflow-hidden mb-4">
                   <div className="relative aspect-[4/3]">
                     <Image
-                      src="/images/filipino-sentiment-analysis.jpg"
+                      src="/images/filipino-sentiment-analysis.png"
                       alt="Filipino Social Media Sentiment Analysis"
                       fill
                       className="object-cover"
@@ -420,7 +419,7 @@ export default function NLPModule() {
               <div className="md:col-span-1">
                 <div className="rounded-lg overflow-hidden relative aspect-square">
                   <Image
-                    src="/images/ph-disaster-response.jpg"
+                    src="/images/ph-disaster-response.png"
                     alt="Typhoon Response System"
                     fill
                     className="object-cover"
@@ -459,8 +458,6 @@ export default function NLPModule() {
           </CardContent>
         </Card>
       </motion.div>
-
-      <NavigationButton nextModule="computer-vision" label="Explore Computer Vision" />
     </div>
   )
 }
