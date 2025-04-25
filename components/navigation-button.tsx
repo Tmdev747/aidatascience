@@ -3,14 +3,19 @@
 import { Button } from "@/components/ui/button"
 import { ChevronRight } from "lucide-react"
 import { useRouter } from "next/navigation"
+import type { ThemeColors } from "@/lib/themes"
 
 interface NavigationButtonProps {
   nextModule: string
   label?: string
+  theme?: ThemeColors
 }
 
-export default function NavigationButton({ nextModule, label = "Next Module" }: NavigationButtonProps) {
+export default function NavigationButton({ nextModule, label = "Next Module", theme }: NavigationButtonProps) {
   const router = useRouter()
+
+  // Use default theme if not provided
+  const { primary = "bg-blue-600", primaryHover = "hover:bg-blue-700", buttonText = "text-white" } = theme || {}
 
   const handleNavigation = () => {
     // If we're using the same page with different states
@@ -20,13 +25,24 @@ export default function NavigationButton({ nextModule, label = "Next Module" }: 
         detail: { module: nextModule },
       })
       window.dispatchEvent(event)
+
+      // If we're in an iframe, also notify the parent
+      if (window !== window.parent) {
+        window.parent.postMessage(
+          {
+            type: "changeModule",
+            module: nextModule,
+          },
+          "*",
+        )
+      }
     }
   }
 
   return (
     <Button
       onClick={handleNavigation}
-      className="fixed bottom-16 right-6 z-50 bg-blue-600 hover:bg-blue-700 text-white px-6 py-6 rounded-full shadow-lg flex items-center gap-2 text-lg animate-pulse hover:animate-none"
+      className={`fixed bottom-16 right-6 z-50 ${primary} ${primaryHover} ${buttonText} px-6 py-6 rounded-full shadow-lg flex items-center gap-2 text-lg animate-pulse hover:animate-none`}
     >
       {label} <ChevronRight className="h-5 w-5" />
     </Button>
