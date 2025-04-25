@@ -8,6 +8,7 @@ import { Slider } from "@/components/ui/slider"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Loader2 } from "lucide-react"
 import { generateAIResponseAction } from "@/app/actions/ai-actions"
+import NavigationButton from "@/components/navigation-button"
 
 export default function NeuralNetworksModule() {
   const [networkType, setNetworkType] = useState("feedforward")
@@ -483,6 +484,8 @@ export default function NeuralNetworksModule() {
           </div>
         </Card>
       </motion.div>
+
+      <NavigationButton nextModule="nlp" label="Explore Natural Language Processing" />
     </div>
   )
 }

@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Loader2 } from "lucide-react"
 import { analyzeTextAction } from "@/app/actions/ai-actions"
 import Image from "next/image"
+import NavigationButton from "@/components/navigation-button"
 
 interface AnalysisResult {
   word: string
@@ -458,6 +459,8 @@ export default function NLPModule() {
           </CardContent>
         </Card>
       </motion.div>
+
+      <NavigationButton nextModule="computer-vision" label="Explore Computer Vision" />
     </div>
   )
 }

@@ -9,6 +9,7 @@ import { Slider } from "@/components/ui/slider"
 import { Loader2, Upload } from "lucide-react"
 import { describeImageAction } from "@/app/actions/ai-actions"
 import Image from "next/image"
+import NavigationButton from "@/components/navigation-button"
 
 interface Detection {
   id: number
@@ -498,6 +499,8 @@ export default function ComputerVisionModule() {
           </CardContent>
         </Card>
       </motion.div>
+
+      <NavigationButton nextModule="applications" label="Explore Philippine Applications" />
     </div>
   )
 }
