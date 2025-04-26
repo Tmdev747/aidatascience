@@ -85,6 +85,12 @@ export function endMeasure(name: string, additionalMetadata?: Record<string, any
     completedMeasurements.splice(0, completedMeasurements.length - MAX_MEASUREMENTS)
   }
 
+  // Automatically report significant performance issues
+  if (duration > 1000) {
+    // More than 1 second
+    reportMeasurement(measurement)
+  }
+
   return measurement
 }
 
@@ -147,25 +153,63 @@ export function clearMeasurements(): void {
 }
 
 /**
+ * Report a single measurement to analytics
+ */
+export function reportMeasurement(measurement: PerformanceMetric): void {
+  if (typeof window === "undefined") return
+
+  // Send to analytics endpoint if available
+  if (process.env.NEXT_PUBLIC_ANALYTICS_ENDPOINT) {
+    try {
+      // Use sendBeacon for non-blocking analytics reporting
+      if (navigator.sendBeacon) {
+        const blob = new Blob([JSON.stringify({ measurement })], { type: "application/json" })
+        navigator.sendBeacon(process.env.NEXT_PUBLIC_ANALYTICS_ENDPOINT, blob)
+      } else {
+        // Fall back to fetch with keepalive
+        fetch(process.env.NEXT_PUBLIC_ANALYTICS_ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ measurement }),
+          keepalive: true,
+        }).catch((e) => console.error("Error reporting measurement:", e))
+      }
+    } catch (e) {
+      console.error("Failed to report measurement:", e)
+    }
+  }
+}
+
+/**
  * Report measurements to analytics or monitoring service
  */
 export function reportMeasurements(onlyRecent = true): void {
+  if (typeof window === "undefined") return
+
   const measurements = onlyRecent ? completedMeasurements.slice(-10) : completedMeasurements
 
   if (measurements.length === 0) {
     return
   }
 
-  // This is where you would integrate with your analytics tool
-  // Like Google Analytics, New Relic, etc.
-  console.debug("Performance measurements:", measurements)
-
-  // Example: Send to analytics endpoint
-  // if (process.env.NEXT_PUBLIC_ANALYTICS_ENDPOINT) {
-  //   fetch(process.env.NEXT_PUBLIC_ANALYTICS_ENDPOINT, {
-  //     method: 'POST',
-  //     headers: { 'Content-Type': 'application/json' },
-  //     body: JSON.stringify({ measurements }),
-  //   }).catch(e => console.error('Error reporting measurements:', e));
-  // }
+  // Send to analytics endpoint if available
+  if (process.env.NEXT_PUBLIC_ANALYTICS_ENDPOINT) {
+    try {
+      // Use sendBeacon for non-blocking analytics reporting
+      if (navigator.sendBeacon) {
+        const blob = new Blob([JSON.stringify({ measurements })], { type: "application/json" })
+        navigator.sendBeacon(process.env.NEXT_PUBLIC_ANALYTICS_ENDPOINT, blob)
+      } else {
+        // Fall back to fetch with keepalive
+        fetch(process.env.NEXT_PUBLIC_ANALYTICS_ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ measurements }),
+          keepalive: true,
+        }).catch((e) => console.error("Error reporting measurements:", e))
+      }
+    } catch (e) {
+      console.error("Failed to report measurements:", e)
+    }
+  }
 }

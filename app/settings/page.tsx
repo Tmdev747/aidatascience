@@ -1,56 +1,86 @@
-"use client"
-
-import { motion } from "framer-motion"
-import AIConfig from "@/components/ai-config"
-import ServiceStatus from "@/components/service-status"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import AppHealthMonitor from "@/components/app-health-monitor"
 import ErrorBoundary from "@/components/error-boundary"
 
 export default function SettingsPage() {
   return (
-    <div className="container mx-auto px-4 py-20">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="text-center mb-12"
-      >
-        <h1 className="text-4xl font-bold text-white mb-4">Settings</h1>
-        <p className="text-xl text-white/80 max-w-3xl mx-auto">Configure your InnovateHub AI experience</p>
-      </motion.div>
+    <div className="container mx-auto py-8 px-4">
+      <h1 className="text-3xl font-bold mb-6">Settings</h1>
 
-      <div className="max-w-2xl mx-auto">
-        <ErrorBoundary>
-          <AIConfig />
-        </ErrorBoundary>
+      <Tabs defaultValue="general" className="w-full">
+        <TabsList className="mb-4">
+          <TabsTrigger value="general">General</TabsTrigger>
+          <TabsTrigger value="ai">AI Configuration</TabsTrigger>
+          <TabsTrigger value="system">System</TabsTrigger>
+        </TabsList>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="mt-8"
-        >
-          <ServiceStatus />
-        </motion.div>
+        <TabsContent value="general">
+          <div className="grid gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Display Settings</CardTitle>
+                <CardDescription>Configure how the application looks and behaves</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p>Display settings content will go here</p>
+              </CardContent>
+            </Card>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="mt-8 bg-slate-800/50 border border-slate-700 rounded-lg p-6"
-        >
-          <h2 className="text-2xl font-bold text-white mb-4">Environment Status</h2>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-white/80">Anthropic API Key</span>
-              <span className="text-green-500">✓ Connected</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-white/80">OpenAI API Key</span>
-              <span className="text-green-500">✓ Connected</span>
-            </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Accessibility</CardTitle>
+                <CardDescription>Configure accessibility settings</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p>Accessibility settings content will go here</p>
+              </CardContent>
+            </Card>
           </div>
-        </motion.div>
-      </div>
+        </TabsContent>
+
+        <TabsContent value="ai">
+          <div className="grid gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>AI Model Selection</CardTitle>
+                <CardDescription>Choose which AI models to use for different features</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p>AI model selection content will go here</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>API Keys</CardTitle>
+                <CardDescription>Manage your API keys for AI services</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p>API key management content will go here</p>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="system">
+          <div className="grid gap-6">
+            <ErrorBoundary>
+              <AppHealthMonitor />
+            </ErrorBoundary>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Performance</CardTitle>
+                <CardDescription>View and optimize application performance</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p>Performance monitoring content will go here</p>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

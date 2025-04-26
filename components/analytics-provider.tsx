@@ -1,73 +1,140 @@
 "use client"
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react"
+import type React from "react"
 
-interface AnalyticsContextType {
-  trackEvent: (eventName: string, eventData?: any) => void
-  moduleVisits: Record<string, number>
-  quizAttempts: number
-  quizScores: number[]
+import { useEffect, createContext, useContext, useState } from "react"
+import { usePathname, useSearchParams } from "next/navigation"
+import { reportMeasurements } from "@/utils/performance"
+import { logger } from "@/utils/logging"
+
+// Define analytics context type
+type AnalyticsContextType = {
+  trackEvent: (eventName: string, eventData?: Record<string, any>) => void
+  isEnabled: boolean
+  setEnabled: (enabled: boolean) => void
 }
 
+// Create context with default values
 const AnalyticsContext = createContext<AnalyticsContextType>({
   trackEvent: () => {},
-  moduleVisits: {},
-  quizAttempts: 0,
-  quizScores: [],
+  isEnabled: true,
+  setEnabled: () => {},
 })
 
+// Hook to use analytics
 export const useAnalytics = () => useContext(AnalyticsContext)
 
-interface AnalyticsProviderProps {
-  children: ReactNode
+// Debounce function to limit analytics calls
+function debounce<T extends (...args: any[]) => any>(func: T, wait: number): (...args: Parameters<T>) => void {
+  let timeout: NodeJS.Timeout | null = null
+
+  return (...args: Parameters<T>) => {
+    if (timeout) clearTimeout(timeout)
+    timeout = setTimeout(() => func(...args), wait)
+  }
 }
 
-export default function AnalyticsProvider({ children }: AnalyticsProviderProps) {
-  const [moduleVisits, setModuleVisits] = useState<Record<string, number>>({})
-  const [quizAttempts, setQuizAttempts] = useState(0)
-  const [quizScores, setQuizScores] = useState<number[]>([])
+export default function AnalyticsProvider({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const [isEnabled, setEnabled] = useState(true)
 
-  // Use useCallback to memoize the trackEvent function
-  const trackEvent = useCallback((eventName: string, eventData?: any) => {
-    // In a real implementation, this would send data to a backend
-    console.log(`Analytics Event: ${eventName}`, eventData)
+  // Track page views
+  useEffect(() => {
+    if (!isEnabled) return
 
-    // Track module visits
-    if (eventName === "module_visit") {
-      setModuleVisits((prev) => ({
-        ...prev,
-        [eventData.moduleId]: (prev[eventData.moduleId] || 0) + 1,
-      }))
+    // Don't track page views in development
+    if (process.env.NODE_ENV === "development") return
+
+    const handlePageView = () => {
+      const url = pathname + (searchParams?.toString() ? `?${searchParams.toString()}` : "")
+
+      // Only send analytics if endpoint is configured
+      if (process.env.NEXT_PUBLIC_ANALYTICS_ENDPOINT) {
+        try {
+          fetch(process.env.NEXT_PUBLIC_ANALYTICS_ENDPOINT, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              type: "pageview",
+              url,
+              timestamp: new Date().toISOString(),
+              referrer: document.referrer || null,
+              userAgent: navigator.userAgent,
+              language: navigator.language,
+              screenWidth: window.innerWidth,
+              screenHeight: window.innerHeight,
+            }),
+            keepalive: true,
+          }).catch((error) => {
+            logger.error("Failed to send page view analytics", error)
+          })
+        } catch (error) {
+          logger.error("Error in analytics", error)
+        }
+      }
     }
 
-    // Track quiz attempts
-    if (eventName === "quiz_attempt") {
-      setQuizAttempts((prev) => prev + 1)
+    // Debounce page view tracking to avoid excessive calls during navigation
+    const debouncedPageView = debounce(handlePageView, 500)
+    debouncedPageView()
+
+    // Report performance measurements on page change
+    reportMeasurements()
+
+    // Clean up
+    return () => {
+      // Any cleanup if needed
+    }
+  }, [pathname, searchParams, isEnabled])
+
+  // Track custom events
+  const trackEvent = (eventName: string, eventData?: Record<string, any>) => {
+    if (!isEnabled) return
+    if (process.env.NODE_ENV === "development") {
+      console.log(`[Analytics] Event: ${eventName}`, eventData)
+      return
     }
 
-    // Track quiz scores
-    if (eventName === "quiz_completed") {
-      setQuizScores((prev) => [...prev, eventData.score])
+    // Only send analytics if endpoint is configured
+    if (process.env.NEXT_PUBLIC_ANALYTICS_ENDPOINT) {
+      try {
+        fetch(process.env.NEXT_PUBLIC_ANALYTICS_ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            type: "event",
+            event: eventName,
+            data: eventData,
+            url: window.location.href,
+            timestamp: new Date().toISOString(),
+          }),
+          keepalive: true,
+        }).catch((error) => {
+          logger.error(`Failed to send event analytics for ${eventName}`, error)
+        })
+      } catch (error) {
+        logger.error(`Error tracking event ${eventName}`, error)
+      }
     }
+  }
 
-    // In a production environment, we would send this data to a server
-    // fetch('/api/analytics', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ eventName, eventData, timestamp: new Date().toISOString() })
-    // })
-  }, []) // Empty dependency array since this function doesn't depend on any state or props
+  // Check for user opt-out preference in localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedPreference = localStorage.getItem("analytics-opt-out")
+      if (storedPreference !== null) {
+        setEnabled(storedPreference !== "true")
+      }
+    }
+  }, [])
 
-  return (
-    <AnalyticsContext.Provider
-      value={{
-        trackEvent,
-        moduleVisits,
-        quizAttempts,
-        quizScores,
-      }}
-    >
-      {children}
-    </AnalyticsContext.Provider>
-  )
+  // Update localStorage when preference changes
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("analytics-opt-out", isEnabled ? "false" : "true")
+    }
+  }, [isEnabled])
+
+  return <AnalyticsContext.Provider value={{ trackEvent, isEnabled, setEnabled }}>{children}</AnalyticsContext.Provider>
 }
