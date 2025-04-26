@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, type ReactNode } from "react"
+import { createContext, useContext, useState, useCallback, type ReactNode } from "react"
 
 interface AnalyticsContextType {
   trackEvent: (eventName: string, eventData?: any) => void
@@ -27,7 +27,8 @@ export default function AnalyticsProvider({ children }: AnalyticsProviderProps) 
   const [quizAttempts, setQuizAttempts] = useState(0)
   const [quizScores, setQuizScores] = useState<number[]>([])
 
-  const trackEvent = (eventName: string, eventData?: any) => {
+  // Use useCallback to memoize the trackEvent function
+  const trackEvent = useCallback((eventName: string, eventData?: any) => {
     // In a real implementation, this would send data to a backend
     console.log(`Analytics Event: ${eventName}`, eventData)
 
@@ -55,7 +56,7 @@ export default function AnalyticsProvider({ children }: AnalyticsProviderProps) 
     //   headers: { 'Content-Type': 'application/json' },
     //   body: JSON.stringify({ eventName, eventData, timestamp: new Date().toISOString() })
     // })
-  }
+  }, []) // Empty dependency array since this function doesn't depend on any state or props
 
   return (
     <AnalyticsContext.Provider

@@ -29,12 +29,13 @@ export default function Home() {
     return () => clearTimeout(timer)
   }, [])
 
+  // Track module visits only when currentModule changes
   useEffect(() => {
-    // Track module visits
-    if (currentModule) {
+    // Only track if not loading and we have a valid module
+    if (!isLoading && currentModule) {
       trackEvent("module_visit", { moduleId: currentModule })
     }
-  }, [currentModule, trackEvent])
+  }, [currentModule, trackEvent, isLoading]) // Include isLoading in the dependency array
 
   const renderCurrentModule = () => {
     switch (currentModule) {
