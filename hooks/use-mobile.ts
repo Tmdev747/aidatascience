@@ -24,3 +24,6 @@ export const useMobile = () => {
 
   return isMobile
 }
+
+// Export the same function with the new name for consistency
+export const useIsMobile = useMobile

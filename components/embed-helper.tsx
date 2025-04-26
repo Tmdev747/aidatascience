@@ -77,7 +77,10 @@ export default function EmbedHelper() {
         <CardTitle className="text-white">Embed InnovateHub AI Demos</CardTitle>
       </CardHeader>
       <CardContent>
-        <p className="text-white/80 mb-4">Copy the code below to embed the AI demos in your website or application.</p>
+        <p className="text-white/80 mb-4">
+          Copy the code below to embed the AI demos in your website or application. The embedded view includes a
+          navigation system that allows users to switch between all available demos.
+        </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
@@ -120,7 +123,7 @@ export default function EmbedHelper() {
           <div className="bg-amber-900/20 border border-amber-800/30 rounded-md p-3 mb-4">
             <p className="text-amber-200 text-sm">
               Compact mode provides a minimal interface optimized for small spaces. It uses simplified controls, reduced
-              padding, and icon-only navigation.
+              padding, and a dropdown selector for navigation between demos.
             </p>
           </div>
         )}

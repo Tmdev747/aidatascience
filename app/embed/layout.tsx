@@ -20,10 +20,13 @@ export default function EmbedLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={`${inter.className} overflow-hidden`}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           <AnalyticsProvider>
-            <Suspense>{children}</Suspense>
+            <Suspense>
+              {/* No header here, just the children */}
+              {children}
+            </Suspense>
           </AnalyticsProvider>
         </ThemeProvider>
       </body>

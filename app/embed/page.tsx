@@ -4,12 +4,14 @@ import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import SmartFarmingDemo from "@/components/smart-farming-demo"
 import NeuralNetworkFilipinoLanguage from "@/components/visualizations/neural-network-filipino-language"
 import FilipinoNLPVisualization from "@/components/visualizations/filipino-nlp-visualization"
 import DisasterResponseAI from "@/components/visualizations/disaster-response-ai"
 import SmartAgricultureAI from "@/components/visualizations/smart-agriculture-ai"
 import { useSearchParams } from "next/navigation"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 export default function EmbedPage() {
   // Define all the available AI apps
@@ -58,6 +60,7 @@ export default function EmbedPage() {
 
   // Get URL parameters
   const searchParams = useSearchParams()
+  const isMobile = useIsMobile()
 
   // Set initial state based on URL parameter or default to "smart-farming"
   const [activeApp, setActiveApp] = useState("smart-farming")
@@ -85,23 +88,48 @@ export default function EmbedPage() {
       className={`min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 ${isCompact ? "p-1" : "p-2"}`}
     >
       <div className="max-w-full mx-auto">
-        {/* App Selection Tabs - Compact version uses smaller text and padding */}
-        <Tabs value={activeApp} onValueChange={setActiveApp} className={isCompact ? "mb-1" : "mb-3"}>
-          <TabsList
-            className={`bg-slate-800 w-full justify-start overflow-x-auto ${isCompact ? "h-8 min-h-8 p-0.5" : ""}`}
-          >
-            {aiApps.map((app) => (
-              <TabsTrigger
-                key={app.id}
-                value={app.id}
-                className={`min-w-max ${isCompact ? "text-xs py-0.5 px-1.5 h-7" : ""}`}
-              >
-                <span className={isCompact ? "" : "mr-2"}>{app.icon}</span>
-                {isCompact ? "" : app.name}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
+        {/* App Selection - Use Tabs for desktop and Select for mobile/compact */}
+        {!isMobile && !isCompact ? (
+          <Tabs value={activeApp} onValueChange={setActiveApp} className={isCompact ? "mb-1" : "mb-3"}>
+            <TabsList
+              className={`bg-slate-800 w-full justify-start overflow-x-auto ${isCompact ? "h-8 min-h-8 p-0.5" : ""}`}
+            >
+              {aiApps.map((app) => (
+                <TabsTrigger
+                  key={app.id}
+                  value={app.id}
+                  className={`min-w-max ${isCompact ? "text-xs py-0.5 px-1.5 h-7" : ""}`}
+                >
+                  <span className="mr-2">{app.icon}</span>
+                  {app.name}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+        ) : (
+          <div className={`${isCompact ? "mb-1" : "mb-3"}`}>
+            <Select value={activeApp} onValueChange={setActiveApp}>
+              <SelectTrigger className="bg-slate-800 border-slate-700 text-white w-full">
+                <SelectValue placeholder="Select a demo">
+                  <span className="flex items-center">
+                    <span className="mr-2">{currentApp.icon}</span>
+                    {currentApp.name}
+                  </span>
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent className="bg-slate-800 border-slate-700">
+                {aiApps.map((app) => (
+                  <SelectItem key={app.id} value={app.id} className="text-white">
+                    <span className="flex items-center">
+                      <span className="mr-2">{app.icon}</span>
+                      {app.name}
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
         {/* App Display */}
         <motion.div key={activeApp} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
