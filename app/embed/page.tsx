@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -9,9 +9,9 @@ import NeuralNetworkFilipinoLanguage from "@/components/visualizations/neural-ne
 import FilipinoNLPVisualization from "@/components/visualizations/filipino-nlp-visualization"
 import DisasterResponseAI from "@/components/visualizations/disaster-response-ai"
 import SmartAgricultureAI from "@/components/visualizations/smart-agriculture-ai"
+import { useSearchParams } from "next/navigation"
 
 export default function EmbedPage() {
-  const [activeApp, setActiveApp] = useState("smart-farming")
   // Define all the available AI apps
   const aiApps = [
     {
@@ -56,14 +56,32 @@ export default function EmbedPage() {
     },
   ]
 
+  // Get URL parameters
+  const searchParams = useSearchParams()
+
+  // Set initial state based on URL parameter or default to "smart-farming"
+  const [activeApp, setActiveApp] = useState("smart-farming")
+
+  // Effect to handle URL parameters when component mounts
+  useEffect(() => {
+    const demoParam = searchParams.get("demo")
+    if (demoParam) {
+      // Check if the requested demo exists in our aiApps array
+      const validDemo = aiApps.find((app) => app.id === demoParam)
+      if (validDemo) {
+        setActiveApp(demoParam)
+      }
+    }
+  }, [searchParams])
+
   // Find the current active app
   const currentApp = aiApps.find((app) => app.id === activeApp) || aiApps[0]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-2">
+      <div className="max-w-full mx-auto">
         {/* App Selection Tabs */}
-        <Tabs value={activeApp} onValueChange={setActiveApp} className="mb-6">
+        <Tabs value={activeApp} onValueChange={setActiveApp} className="mb-3">
           <TabsList className="bg-slate-800 w-full justify-start overflow-x-auto">
             {aiApps.map((app) => (
               <TabsTrigger key={app.id} value={app.id} className="min-w-max">
@@ -77,23 +95,23 @@ export default function EmbedPage() {
         <motion.div key={activeApp} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
           <Card className="bg-slate-800/50 border-slate-700 overflow-hidden">
             <div className={`h-2 bg-gradient-to-r ${currentApp.color}`}></div>
-            <CardContent className="p-6">
-              <div className="mb-6">
-                <div className="flex items-center mb-2">
-                  <span className="text-2xl mr-2">{currentApp.icon}</span>
-                  <h2 className="text-xl font-bold text-white">{currentApp.name}</h2>
+            <CardContent className="p-3">
+              <div className="mb-3">
+                <div className="flex items-center mb-1">
+                  <span className="text-xl mr-2">{currentApp.icon}</span>
+                  <h2 className="text-lg font-bold text-white">{currentApp.name}</h2>
                 </div>
-                <p className="text-white/80">{currentApp.description}</p>
+                <p className="text-white/80 text-sm">{currentApp.description}</p>
               </div>
 
-              <div className="bg-slate-900 rounded-lg p-4 overflow-hidden">{currentApp.component}</div>
+              <div className="bg-slate-900 rounded-lg p-3 overflow-hidden">{currentApp.component}</div>
             </CardContent>
           </Card>
         </motion.div>
 
         {/* Footer */}
-        <div className="mt-6 text-center text-white/50 text-xs">
-          <p>© {new Date().getFullYear()} InnovateHub AI | Batangas State University | For educational purposes only</p>
+        <div className="mt-2 text-center text-white/50 text-xs">
+          <p>© {new Date().getFullYear()} InnovateHub AI | BSU | Educational Use Only</p>
         </div>
       </div>
     </div>
