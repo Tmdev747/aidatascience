@@ -21,6 +21,7 @@ export default function NavigationBar() {
     { name: "Image Gallery", path: "/image-gallery" },
     { name: "Settings", path: "/settings" },
     { name: "Embed", path: "/embed-help" },
+    { name: "Data Science", path: "/data-science" },
   ]
 
   return (

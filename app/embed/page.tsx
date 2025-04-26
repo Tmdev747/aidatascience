@@ -68,6 +68,9 @@ export default function EmbedPage() {
   // Check if compact mode is enabled
   const isCompact = searchParams.get("compact") === "true"
 
+  // Get theme from URL parameter or default to "dark"
+  const theme = searchParams.get("theme") || "dark"
+
   // Effect to handle URL parameters when component mounts
   useEffect(() => {
     const demoParam = searchParams.get("demo")
@@ -83,16 +86,115 @@ export default function EmbedPage() {
   // Find the current active app
   const currentApp = aiApps.find((app) => app.id === activeApp) || aiApps[0]
 
+  // Get theme-specific classes
+  const getThemeClasses = () => {
+    switch (theme) {
+      case "light":
+        return "bg-gradient-to-br from-gray-100 via-gray-50 to-white"
+      case "blue":
+        return "bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900"
+      case "green":
+        return "bg-gradient-to-br from-emerald-900 via-emerald-800 to-green-900"
+      case "purple":
+        return "bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900"
+      case "dark":
+      default:
+        return "bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900"
+    }
+  }
+
+  const getCardClasses = () => {
+    switch (theme) {
+      case "light":
+        return "bg-white/80 border-gray-200 shadow-sm"
+      case "blue":
+        return "bg-blue-800/50 border-blue-700"
+      case "green":
+        return "bg-emerald-800/50 border-emerald-700"
+      case "purple":
+        return "bg-purple-800/50 border-purple-700"
+      case "dark":
+      default:
+        return "bg-slate-800/50 border-slate-700"
+    }
+  }
+
+  const getContentBgClasses = () => {
+    switch (theme) {
+      case "light":
+        return "bg-gray-50"
+      case "blue":
+        return "bg-blue-900"
+      case "green":
+        return "bg-emerald-900"
+      case "purple":
+        return "bg-purple-900"
+      case "dark":
+      default:
+        return "bg-slate-900"
+    }
+  }
+
+  const getTabsClasses = () => {
+    switch (theme) {
+      case "light":
+        return "bg-gray-200"
+      case "blue":
+        return "bg-blue-800"
+      case "green":
+        return "bg-emerald-800"
+      case "purple":
+        return "bg-purple-800"
+      case "dark":
+      default:
+        return "bg-slate-800"
+    }
+  }
+
+  const getTextClasses = () => {
+    return theme === "light" ? "text-gray-900" : "text-white"
+  }
+
+  const getSubTextClasses = () => {
+    switch (theme) {
+      case "light":
+        return "text-gray-600"
+      case "blue":
+        return "text-blue-200"
+      case "green":
+        return "text-emerald-200"
+      case "purple":
+        return "text-purple-200"
+      case "dark":
+      default:
+        return "text-white/80"
+    }
+  }
+
+  const getSelectClasses = () => {
+    switch (theme) {
+      case "light":
+        return "bg-white border-gray-300 text-gray-900"
+      case "blue":
+        return "bg-blue-800 border-blue-700 text-white"
+      case "green":
+        return "bg-emerald-800 border-emerald-700 text-white"
+      case "purple":
+        return "bg-purple-800 border-purple-700 text-white"
+      case "dark":
+      default:
+        return "bg-slate-800 border-slate-700 text-white"
+    }
+  }
+
   return (
-    <div
-      className={`min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 ${isCompact ? "p-1" : "p-2"}`}
-    >
+    <div className={`min-h-screen ${getThemeClasses()} ${getTextClasses()} ${isCompact ? "p-1" : "p-2"}`}>
       <div className="max-w-full mx-auto">
         {/* App Selection - Use Tabs for desktop and Select for mobile/compact */}
         {!isMobile && !isCompact ? (
           <Tabs value={activeApp} onValueChange={setActiveApp} className={isCompact ? "mb-1" : "mb-3"}>
             <TabsList
-              className={`bg-slate-800 w-full justify-start overflow-x-auto ${isCompact ? "h-8 min-h-8 p-0.5" : ""}`}
+              className={`${getTabsClasses()} w-full justify-start overflow-x-auto ${isCompact ? "h-8 min-h-8 p-0.5" : ""}`}
             >
               {aiApps.map((app) => (
                 <TabsTrigger
@@ -109,7 +211,7 @@ export default function EmbedPage() {
         ) : (
           <div className={`${isCompact ? "mb-1" : "mb-3"}`}>
             <Select value={activeApp} onValueChange={setActiveApp}>
-              <SelectTrigger className="bg-slate-800 border-slate-700 text-white w-full">
+              <SelectTrigger className={`${getSelectClasses()} w-full`}>
                 <SelectValue placeholder="Select a demo">
                   <span className="flex items-center">
                     <span className="mr-2">{currentApp.icon}</span>
@@ -117,9 +219,13 @@ export default function EmbedPage() {
                   </span>
                 </SelectValue>
               </SelectTrigger>
-              <SelectContent className="bg-slate-800 border-slate-700">
+              <SelectContent className={getSelectClasses()}>
                 {aiApps.map((app) => (
-                  <SelectItem key={app.id} value={app.id} className="text-white">
+                  <SelectItem
+                    key={app.id}
+                    value={app.id}
+                    className={theme === "light" ? "text-gray-900" : "text-white"}
+                  >
                     <span className="flex items-center">
                       <span className="mr-2">{app.icon}</span>
                       {app.name}
@@ -133,7 +239,7 @@ export default function EmbedPage() {
 
         {/* App Display */}
         <motion.div key={activeApp} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
-          <Card className="bg-slate-800/50 border-slate-700 overflow-hidden">
+          <Card className={`${getCardClasses()} overflow-hidden`}>
             <div className={`h-2 bg-gradient-to-r ${currentApp.color}`}></div>
             <CardContent className={isCompact ? "p-1" : "p-3"}>
               {/* Header - Hide description in compact mode */}
@@ -141,9 +247,9 @@ export default function EmbedPage() {
                 <div className="mb-3">
                   <div className="flex items-center mb-1">
                     <span className="text-xl mr-2">{currentApp.icon}</span>
-                    <h2 className="text-lg font-bold text-white">{currentApp.name}</h2>
+                    <h2 className={`text-lg font-bold ${getTextClasses()}`}>{currentApp.name}</h2>
                   </div>
-                  <p className="text-white/80 text-sm">{currentApp.description}</p>
+                  <p className={`${getSubTextClasses()} text-sm`}>{currentApp.description}</p>
                 </div>
               )}
 
@@ -151,11 +257,11 @@ export default function EmbedPage() {
               {isCompact && (
                 <div className="flex items-center mb-1">
                   <span className="text-sm mr-1">{currentApp.icon}</span>
-                  <h2 className="text-sm font-medium text-white truncate">{currentApp.name}</h2>
+                  <h2 className={`text-sm font-medium ${getTextClasses()} truncate`}>{currentApp.name}</h2>
                 </div>
               )}
 
-              <div className={`bg-slate-900 rounded-lg ${isCompact ? "p-1" : "p-3"} overflow-hidden`}>
+              <div className={`${getContentBgClasses()} rounded-lg ${isCompact ? "p-1" : "p-3"} overflow-hidden`}>
                 {currentApp.component}
               </div>
             </CardContent>

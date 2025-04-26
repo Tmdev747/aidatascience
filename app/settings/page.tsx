@@ -2,6 +2,8 @@
 
 import { motion } from "framer-motion"
 import AIConfig from "@/components/ai-config"
+import ServiceStatus from "@/components/service-status"
+import ErrorBoundary from "@/components/error-boundary"
 
 export default function SettingsPage() {
   return (
@@ -17,12 +19,23 @@ export default function SettingsPage() {
       </motion.div>
 
       <div className="max-w-2xl mx-auto">
-        <AIConfig />
+        <ErrorBoundary>
+          <AIConfig />
+        </ErrorBoundary>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
+          className="mt-8"
+        >
+          <ServiceStatus />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
           className="mt-8 bg-slate-800/50 border border-slate-700 rounded-lg p-6"
         >
           <h2 className="text-2xl font-bold text-white mb-4">Environment Status</h2>

@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Copy, Check } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
@@ -14,6 +14,7 @@ export default function EmbedHelper() {
   const [embedSize, setEmbedSize] = useState("medium")
   const [selectedDemo, setSelectedDemo] = useState("default")
   const [compactMode, setCompactMode] = useState(false)
+  const [theme, setTheme] = useState("dark")
 
   const baseUrl = typeof window !== "undefined" ? window.location.origin : ""
 
@@ -27,6 +28,10 @@ export default function EmbedHelper() {
 
   if (compactMode) {
     params.append("compact", "true")
+  }
+
+  if (theme !== "dark") {
+    params.append("theme", theme)
   }
 
   const queryString = params.toString()
@@ -53,6 +58,14 @@ export default function EmbedHelper() {
     { value: "nlp", label: "Filipino NLP Analysis" },
     { value: "disaster-response", label: "Disaster Response AI" },
     { value: "agriculture-ai", label: "Agriculture AI Visualization" },
+  ]
+
+  const themeOptions = [
+    { value: "dark", label: "Dark Theme", color: "bg-slate-800" },
+    { value: "light", label: "Light Theme", color: "bg-gray-100" },
+    { value: "blue", label: "Blue Theme", color: "bg-blue-800" },
+    { value: "green", label: "Green Theme", color: "bg-emerald-800" },
+    { value: "purple", label: "Purple Theme", color: "bg-purple-800" },
   ]
 
   const iframeCode = `<iframe 
@@ -82,51 +95,104 @@ export default function EmbedHelper() {
           navigation system that allows users to switch between all available demos.
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <div>
-            <label className="block text-sm font-medium text-white/80 mb-2">Size:</label>
-            <Tabs value={embedSize} onValueChange={setEmbedSize}>
-              <TabsList className="bg-slate-700">
-                <TabsTrigger value="small">Small</TabsTrigger>
-                <TabsTrigger value="medium">Medium</TabsTrigger>
-                <TabsTrigger value="large">Large</TabsTrigger>
-                <TabsTrigger value="responsive">Responsive</TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
+        <Tabs defaultValue="basic" className="mb-6">
+          <TabsList className="mb-4">
+            <TabsTrigger value="basic">Basic Options</TabsTrigger>
+            <TabsTrigger value="appearance">Appearance</TabsTrigger>
+            <TabsTrigger value="preview">Preview</TabsTrigger>
+          </TabsList>
 
-          <div>
-            <label className="block text-sm font-medium text-white/80 mb-2">Initial Demo:</label>
-            <Select value={selectedDemo} onValueChange={setSelectedDemo}>
-              <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
-                <SelectValue placeholder="Choose initial demo" />
-              </SelectTrigger>
-              <SelectContent className="bg-slate-700 border-slate-600">
-                {demoOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value} className="text-white">
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+          <TabsContent value="basic">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-sm font-medium text-white/80 mb-2">Size:</label>
+                <Tabs value={embedSize} onValueChange={setEmbedSize}>
+                  <TabsList className="bg-slate-700">
+                    <TabsTrigger value="small">Small</TabsTrigger>
+                    <TabsTrigger value="medium">Medium</TabsTrigger>
+                    <TabsTrigger value="large">Large</TabsTrigger>
+                    <TabsTrigger value="responsive">Responsive</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
 
-        <div className="flex items-center space-x-2 mb-4">
-          <Switch id="compact-mode" checked={compactMode} onCheckedChange={setCompactMode} />
-          <Label htmlFor="compact-mode" className="text-white">
-            Compact Mode (for very limited spaces)
-          </Label>
-        </div>
+              <div>
+                <label className="block text-sm font-medium text-white/80 mb-2">Initial Demo:</label>
+                <Select value={selectedDemo} onValueChange={setSelectedDemo}>
+                  <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
+                    <SelectValue placeholder="Choose initial demo" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-700 border-slate-600">
+                    {demoOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value} className="text-white">
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
 
-        {compactMode && (
-          <div className="bg-amber-900/20 border border-amber-800/30 rounded-md p-3 mb-4">
-            <p className="text-amber-200 text-sm">
-              Compact mode provides a minimal interface optimized for small spaces. It uses simplified controls, reduced
-              padding, and a dropdown selector for navigation between demos.
-            </p>
-          </div>
-        )}
+            <div className="flex items-center space-x-2 mb-4">
+              <Switch id="compact-mode" checked={compactMode} onCheckedChange={setCompactMode} />
+              <Label htmlFor="compact-mode" className="text-white">
+                Compact Mode (for very limited spaces)
+              </Label>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="appearance">
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-white/80 mb-2">Theme:</label>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                  {themeOptions.map((option) => (
+                    <div
+                      key={option.value}
+                      className={`
+                        cursor-pointer rounded-md p-3 border-2 transition-all
+                        ${theme === option.value ? "border-blue-500" : "border-transparent"}
+                        ${option.value === "light" ? "text-gray-900" : "text-white"}
+                      `}
+                      onClick={() => setTheme(option.value)}
+                    >
+                      <div className={`${option.color} rounded-md p-2 mb-2 h-12 flex items-center justify-center`}>
+                        <span className={option.value === "light" ? "text-gray-900" : "text-white"}>Aa</span>
+                      </div>
+                      <div className="text-center text-sm">{option.label}</div>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-white/60 text-xs mt-2">
+                  Choose a theme that matches your website's design. The theme affects colors, backgrounds, and text.
+                </p>
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="preview">
+            <div className="bg-slate-900 rounded-md overflow-hidden mb-4">
+              <div className="p-2 bg-slate-800 text-white/80 text-xs">Preview</div>
+              <div className="p-4 flex justify-center">
+                <div
+                  className="border border-slate-700 rounded overflow-hidden"
+                  style={{
+                    width: Math.min(typeof currentSize.width === "number" ? currentSize.width : 600, 600),
+                    height: Math.min(typeof currentSize.height === "number" ? currentSize.height : 400, 400),
+                  }}
+                >
+                  <iframe
+                    src={embedUrl}
+                    width="100%"
+                    height="100%"
+                    frameBorder="0"
+                    title="InnovateHub AI Demos Preview"
+                  />
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
 
         <div className="bg-slate-900 p-4 rounded-md mb-4">
           <pre className="text-white/80 text-sm overflow-x-auto whitespace-pre-wrap">{iframeCode}</pre>

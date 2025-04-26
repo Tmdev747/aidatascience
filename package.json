@@ -69,6 +69,7 @@
     "@react-three/drei": "latest",
     "framer-motion": "latest",
     "qr-code-styling": "latest",
+    "ai": "latest",
     "@ai-sdk/anthropic": "latest",
     "@ai-sdk/openai": "latest"
   },
