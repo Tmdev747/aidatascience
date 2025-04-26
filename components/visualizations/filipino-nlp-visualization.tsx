@@ -340,7 +340,7 @@ export default function FilipinoNLPVisualization() {
                     </div>
 
                     <div className="text-xs text-white/50 text-center">
-                      Filipino-English translation powered by neural machine translation
+                      Filipino-English translation powered by neural machine translation by InnovateHub AI
                     </div>
                   </div>
                 )}

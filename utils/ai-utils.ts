@@ -1,21 +1,48 @@
-import { groq } from "@ai-sdk/groq"
-import { generateText } from "ai"
+// Import the AI SDK packages directly
+import { anthropic } from "@ai-sdk/anthropic"
+import { openai } from "@ai-sdk/openai"
 
-// Groq client configuration
-export const groqLlama3 = groq("llama3-70b-8192")
-export const groqMixtral = groq("mixtral-8x7b-32768")
+// InnovateHub AI client configuration
+const anthropicClient = anthropic("claude-3-opus-20240229")
+const openaiClient = openai("gpt-4o")
 
-// Text generation with streaming capability
+// Helper function to get the selected model from localStorage or default to Claude
+function getSelectedModel() {
+  if (typeof window !== "undefined") {
+    const savedModel = localStorage.getItem("innovatehub-ai-model")
+    return savedModel === "gpt4o" ? "openai" : "anthropic"
+  }
+  return "anthropic" // Default to Claude on server-side
+}
+
+// Text generation with direct API calls
 export async function generateAIResponse(prompt: string, system?: string) {
   try {
-    const response = await generateText({
-      model: groqLlama3,
-      prompt,
-      system,
-      maxTokens: 1000,
-    })
+    // Get the selected model provider
+    const selectedProvider = typeof window !== "undefined" ? getSelectedModel() : "anthropic"
 
-    return { text: response.text, success: true }
+    let response
+
+    if (selectedProvider === "anthropic") {
+      response = await anthropicClient.messages.create({
+        model: "claude-3-opus-20240229",
+        max_tokens: 1000,
+        messages: [{ role: "user", content: prompt }],
+        system: system || undefined,
+      })
+    } else {
+      response = await openaiClient.chat.completions.create({
+        model: "gpt-4o",
+        max_tokens: 1000,
+        messages: [...(system ? [{ role: "system", content: system }] : []), { role: "user", content: prompt }],
+      })
+    }
+
+    // Extract text from response based on provider
+    const responseText =
+      selectedProvider === "anthropic" ? response.content[0].text : response.choices[0].message.content
+
+    return { text: responseText, success: true }
   } catch (error) {
     console.error("Error generating AI response:", error)
     return {
@@ -41,23 +68,26 @@ export async function analyzeText(text: string, analysisType: string) {
   IMPORTANT: Respond ONLY with the JSON data and nothing else.`
 
   try {
-    const response = await generateText({
-      model: groqLlama3,
-      prompt,
-      system,
-      maxTokens: 1000,
-    })
+    const result = await generateAIResponse(prompt, system)
 
-    try {
-      // Parse the JSON response
-      return { data: JSON.parse(response.text), success: true }
-    } catch (jsonError) {
-      console.error("Error parsing JSON from AI response:", jsonError)
-      console.log("Raw response:", response.text)
+    if (result.success) {
+      try {
+        // Parse the JSON response
+        return { data: JSON.parse(result.text), success: true }
+      } catch (jsonError) {
+        console.error("Error parsing JSON from AI response:", jsonError)
+        console.log("Raw response:", result.text)
+        return {
+          data: null,
+          success: false,
+          error: "Failed to parse AI response",
+        }
+      }
+    } else {
       return {
         data: null,
         success: false,
-        error: "Failed to parse AI response",
+        error: result.text,
       }
     }
   } catch (error) {
@@ -82,23 +112,26 @@ export async function describeImage(imageContext: string) {
   IMPORTANT: Respond ONLY with the JSON data and nothing else.`
 
   try {
-    const response = await generateText({
-      model: groqLlama3,
-      prompt,
-      system,
-      maxTokens: 1000,
-    })
+    const result = await generateAIResponse(prompt, system)
 
-    try {
-      // Parse the JSON response
-      return { data: JSON.parse(response.text), success: true }
-    } catch (jsonError) {
-      console.error("Error parsing JSON from AI response:", jsonError)
-      console.log("Raw response:", response.text)
+    if (result.success) {
+      try {
+        // Parse the JSON response
+        return { data: JSON.parse(result.text), success: true }
+      } catch (jsonError) {
+        console.error("Error parsing JSON from AI response:", jsonError)
+        console.log("Raw response:", result.text)
+        return {
+          data: null,
+          success: false,
+          error: "Failed to parse AI response",
+        }
+      }
+    } else {
       return {
         data: null,
         success: false,
-        error: "Failed to parse AI response",
+        error: result.text,
       }
     }
   } catch (error) {
@@ -124,23 +157,26 @@ export async function explainPrediction(algorithm: string, dataPoints: any) {
   IMPORTANT: Respond ONLY with the JSON data and nothing else.`
 
   try {
-    const response = await generateText({
-      model: groqLlama3,
-      prompt,
-      system,
-      maxTokens: 1000,
-    })
+    const result = await generateAIResponse(prompt, system)
 
-    try {
-      // Parse the JSON response
-      return { data: JSON.parse(response.text), success: true }
-    } catch (jsonError) {
-      console.error("Error parsing JSON from AI response:", jsonError)
-      console.log("Raw response:", response.text)
+    if (result.success) {
+      try {
+        // Parse the JSON response
+        return { data: JSON.parse(result.text), success: true }
+      } catch (jsonError) {
+        console.error("Error parsing JSON from AI response:", jsonError)
+        console.log("Raw response:", result.text)
+        return {
+          data: null,
+          success: false,
+          error: "Failed to parse AI response",
+        }
+      }
+    } else {
       return {
         data: null,
         success: false,
-        error: "Failed to parse AI response",
+        error: result.text,
       }
     }
   } catch (error) {
@@ -173,23 +209,26 @@ export async function getAgricultureRecommendation(cropType: string, region: str
   IMPORTANT: Respond ONLY with the JSON data and nothing else.`
 
   try {
-    const response = await generateText({
-      model: groqLlama3,
-      prompt,
-      system,
-      maxTokens: 1000,
-    })
+    const result = await generateAIResponse(prompt, system)
 
-    try {
-      // Parse the JSON response
-      return { data: JSON.parse(response.text), success: true }
-    } catch (jsonError) {
-      console.error("Error parsing JSON from AI response:", jsonError)
-      console.log("Raw response:", response.text)
+    if (result.success) {
+      try {
+        // Parse the JSON response
+        return { data: JSON.parse(result.text), success: true }
+      } catch (jsonError) {
+        console.error("Error parsing JSON from AI response:", jsonError)
+        console.log("Raw response:", result.text)
+        return {
+          data: null,
+          success: false,
+          error: "Failed to parse AI response",
+        }
+      }
+    } else {
       return {
         data: null,
         success: false,
-        error: "Failed to parse AI response",
+        error: result.text,
       }
     }
   } catch (error) {

@@ -1,63 +1,32 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
+import FallbackContent from "@/components/fallback-content"
 
-interface VideoBackgroundProps {
-  videoId: string
-  overlayOpacity?: number
-}
-
-export default function VideoBackground({ videoId, overlayOpacity = 0.5 }: VideoBackgroundProps) {
-  const iframeRef = useRef<HTMLIFrameElement>(null)
+export default function VideoBackground() {
+  const [isLoaded, setIsLoaded] = useState(false)
+  const [hasError, setHasError] = useState(false)
 
   useEffect(() => {
-    // Add event listener for messages from the Vimeo iframe
-    const handleMessage = (event: MessageEvent) => {
-      // Check if the message is from Vimeo
-      if (!event.origin.includes("vimeo.com")) return
+    // This is just a placeholder - in a real app, we would load an actual video
+    const timer = setTimeout(() => {
+      setIsLoaded(true)
+    }, 1000)
 
-      try {
-        const data = JSON.parse(event.data)
-
-        // If the video ended, restart it for continuous loop
-        if (data.event === "ended" && iframeRef.current) {
-          // Get the iframe's contentWindow
-          const contentWindow = iframeRef.current.contentWindow
-          if (contentWindow) {
-            // Post message to play the video again
-            contentWindow.postMessage(JSON.stringify({ method: "play" }), "https://player.vimeo.com")
-          }
-        }
-      } catch (e) {
-        // Ignore parsing errors
-      }
-    }
-
-    window.addEventListener("message", handleMessage)
-    return () => window.removeEventListener("message", handleMessage)
+    return () => clearTimeout(timer)
   }, [])
 
+  if (hasError) {
+    return <FallbackContent />
+  }
+
   return (
-    <div className="fixed inset-0 w-full h-full z-0 overflow-hidden">
-      <div className="absolute inset-0 bg-black" style={{ opacity: overlayOpacity }} />
-      <div className="absolute inset-0 w-full h-full">
-        <iframe
-          ref={iframeRef}
-          src={`https://player.vimeo.com/video/${videoId}?background=1&autoplay=1&loop=1&byline=0&title=0&muted=0`}
-          allow="autoplay; fullscreen; picture-in-picture"
-          className="w-full h-full"
-          style={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: "100vw",
-            height: "100vh",
-            minHeight: "100vh",
-            minWidth: "100vw",
-          }}
-        ></iframe>
+    <>
+      {!isLoaded && <FallbackContent />}
+      <div className="absolute inset-0 w-full h-full bg-slate-900">
+        {/* Video would be loaded here in a real implementation */}
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20 mix-blend-overlay" />
       </div>
-    </div>
+    </>
   )
 }

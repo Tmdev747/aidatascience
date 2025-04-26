@@ -1,131 +1,90 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { motion } from "framer-motion"
+import { Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Home, Brain, Network, MessageSquare, Eye, BarChart3, HelpCircle, Menu, X } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
-import { useMobile } from "@/hooks/use-mobile"
-import Image from "next/image"
+import { usePathname } from "next/navigation"
 
-interface NavigationBarProps {
-  currentModule: string
-  setCurrentModule: (module: string) => void
-}
+export default function NavigationBar() {
+  const [isOpen, setIsOpen] = useState(false)
+  const pathname = usePathname()
 
-export default function NavigationBar({ currentModule, setCurrentModule }: NavigationBarProps) {
-  const [menuOpen, setMenuOpen] = useState(false)
-  const { toast } = useToast()
-  const isMobile = useMobile()
-
-  const modules = [
-    { id: "intro", name: "Introduction", icon: <Home className="mr-2" /> },
-    { id: "machine-learning", name: "Machine Learning", icon: <Brain className="mr-2" /> },
-    { id: "neural-networks", name: "Neural Networks", icon: <Network className="mr-2" /> },
-    { id: "nlp", name: "Natural Language Processing", icon: <MessageSquare className="mr-2" /> },
-    { id: "computer-vision", name: "Computer Vision", icon: <Eye className="mr-2" /> },
-    { id: "applications", name: "Philippine Applications", icon: <BarChart3 className="mr-2" /> },
-    { id: "quiz", name: "Assessment", icon: <HelpCircle className="mr-2" /> },
-  ]
-
-  const handleModuleChange = (moduleId: string) => {
-    setCurrentModule(moduleId)
-    if (isMobile) {
-      setMenuOpen(false)
-    }
-
-    toast({
-      title: "Module Changed",
-      description: `Navigating to ${modules.find((m) => m.id === moduleId)?.name}`,
-      duration: 2000,
-    })
+  const toggleMenu = () => {
+    setIsOpen(!isOpen)
   }
 
+  const navItems = [
+    { name: "Home", path: "/" },
+    { name: "Visualizations", path: "/visualizations" },
+    { name: "Image Gallery", path: "/image-gallery" },
+    { name: "Settings", path: "/settings" },
+  ]
+
   return (
-    <header className="fixed top-0 w-full z-50">
-      <div className="bg-slate-900/90 backdrop-blur-sm shadow-lg">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5 }}
-                className="flex items-center"
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-slate-900/80 backdrop-blur-md border-b border-slate-800">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo */}
+          <Link href="/" className="flex items-center space-x-2">
+            <img src="/images/innovate-hub-logo.png" alt="InnovateHub Logo" className="h-8 w-auto" />
+            <span className="font-bold text-white text-lg hidden sm:block">InnovateHub</span>
+          </Link>
+
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex space-x-4">
+            {navItems.map((item) => (
+              <Link
+                key={item.name}
+                href={item.path}
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  pathname === item.path
+                    ? "bg-blue-600 text-white"
+                    : "text-gray-300 hover:bg-slate-800 hover:text-white"
+                }`}
               >
-                <div className="w-10 h-10 mr-3 relative">
-                  <Image
-                    src="/images/innovate-hub-logo.png"
-                    alt="Innovate Hub Logo"
-                    width={40}
-                    height={40}
-                    className="rounded-full"
-                  />
-                </div>
-                <div>
-                  <h1 className="text-white font-bold text-lg">AI in Data Science</h1>
-                  <p className="text-blue-300 text-xs">Batangas State University</p>
-                </div>
-              </motion.div>
-            </div>
+                {item.name}
+              </Link>
+            ))}
+          </div>
 
-            {/* Desktop Navigation */}
-            {!isMobile && (
-              <nav className="hidden md:flex space-x-1">
-                {modules.map((module) => (
-                  <Button
-                    key={module.id}
-                    variant={currentModule === module.id ? "default" : "ghost"}
-                    size="sm"
-                    className={`${
-                      currentModule === module.id ? "bg-blue-600 hover:bg-blue-700" : "text-white hover:bg-slate-800"
-                    }`}
-                    onClick={() => handleModuleChange(module.id)}
-                  >
-                    {module.icon}
-                    <span className="hidden lg:inline">{module.name}</span>
-                  </Button>
-                ))}
-              </nav>
-            )}
-
-            {/* Mobile menu button */}
-            {isMobile && (
-              <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMenuOpen(!menuOpen)}>
-                {menuOpen ? <X className="h-6 w-6 text-white" /> : <Menu className="h-6 w-6 text-white" />}
-              </Button>
-            )}
+          {/* Mobile Navigation Button */}
+          <div className="md:hidden">
+            <Button variant="ghost" size="icon" onClick={toggleMenu} aria-label="Toggle menu">
+              {isOpen ? <X className="h-6 w-6 text-white" /> : <Menu className="h-6 w-6 text-white" />}
+            </Button>
           </div>
         </div>
       </div>
 
       {/* Mobile Navigation Menu */}
-      {isMobile && (
+      {isOpen && (
         <motion.div
-          initial={false}
-          animate={menuOpen ? { height: "auto", opacity: 1 } : { height: 0, opacity: 0 }}
-          transition={{ duration: 0.3 }}
-          className="bg-slate-800 overflow-hidden"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.2 }}
+          className="md:hidden"
         >
-          <div className="container mx-auto px-4 py-2">
-            <nav className="flex flex-col space-y-1">
-              {modules.map((module) => (
-                <Button
-                  key={module.id}
-                  variant={currentModule === module.id ? "default" : "ghost"}
-                  className={`justify-start ${
-                    currentModule === module.id ? "bg-blue-600 hover:bg-blue-700" : "text-white"
-                  }`}
-                  onClick={() => handleModuleChange(module.id)}
-                >
-                  {module.icon}
-                  {module.name}
-                </Button>
-              ))}
-            </nav>
+          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-slate-900 border-b border-slate-800">
+            {navItems.map((item) => (
+              <Link
+                key={item.name}
+                href={item.path}
+                className={`block px-3 py-2 rounded-md text-base font-medium ${
+                  pathname === item.path
+                    ? "bg-blue-600 text-white"
+                    : "text-gray-300 hover:bg-slate-800 hover:text-white"
+                }`}
+                onClick={() => setIsOpen(false)}
+              >
+                {item.name}
+              </Link>
+            ))}
           </div>
         </motion.div>
       )}
-    </header>
+    </nav>
   )
 }

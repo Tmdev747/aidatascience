@@ -1,43 +1,30 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { ChevronRight } from "lucide-react"
-import { useRouter } from "next/navigation"
-import { useMobile } from "@/hooks/use-mobile"
+import { ArrowRight } from "lucide-react"
 
 interface NavigationButtonProps {
   nextModule: string
-  label?: string
 }
 
-export default function NavigationButton({ nextModule, label = "Next Module" }: NavigationButtonProps) {
-  const router = useRouter()
-  const isMobile = useMobile()
+export default function NavigationButton({ nextModule }: NavigationButtonProps) {
+  const handleClick = () => {
+    // Create a custom event to notify parent components about module change
+    const event = new CustomEvent("changeModule", {
+      detail: { module: nextModule },
+    })
+    window.dispatchEvent(event)
 
-  const handleNavigation = () => {
-    // If we're using the same page with different states
-    if (typeof window !== "undefined") {
-      // Scroll to top when changing modules
-      window.scrollTo(0, 0)
-
-      // Dispatch a custom event that the parent component can listen for
-      const event = new CustomEvent("changeModule", {
-        detail: { module: nextModule },
-      })
-      window.dispatchEvent(event)
-    }
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
   return (
-    <Button
-      onClick={handleNavigation}
-      className={`fixed z-50 bg-blue-600 hover:bg-blue-700 text-white shadow-lg flex items-center gap-1 animate-pulse hover:animate-none ${
-        isMobile
-          ? "bottom-16 right-4 px-3 py-2 text-sm rounded-lg"
-          : "bottom-16 right-6 px-5 py-5 text-base rounded-full"
-      }`}
-    >
-      {isMobile ? "Next" : label} <ChevronRight className={isMobile ? "h-4 w-4" : "h-5 w-5"} />
-    </Button>
+    <div className="fixed bottom-20 right-8 z-30">
+      <Button onClick={handleClick} size="lg" className="bg-blue-600 hover:bg-blue-700 shadow-lg rounded-full px-6">
+        Next Module
+        <ArrowRight className="ml-2 h-5 w-5" />
+      </Button>
+    </div>
   )
 }

@@ -3,19 +3,15 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
+import NavigationBar from "@/components/navigation-bar"
+import AnalyticsProvider from "@/components/analytics-provider"
+import { Suspense } from "react"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "AI in Data Science | Batangas State University",
-  description: "Interactive presentation on AI in Data Science with Philippine context for Batangas State University",
-  icons: {
-    icon: "/images/innovate-hub-logo.png",
-    apple: "/images/innovate-hub-logo.png",
-  },
-  authors: [{ name: "Innovate Hub" }],
-  keywords: ["AI", "Data Science", "Machine Learning", "Philippines", "Batangas State University", "Education"],
-  creator: "Innovate Hub",
+  title: "AI & Data Science in the Philippines",
+  description: "Interactive presentation on AI and Data Science applications in the Philippines",
     generator: 'v0.dev'
 }
 
@@ -26,12 +22,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-        <link rel="icon" href="/images/innovate-hub-logo.png" sizes="any" />
-      </head>
       <body className={inter.className}>
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-          {children}
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+          <AnalyticsProvider>
+            <NavigationBar />
+            <Suspense>{children}</Suspense>
+          </AnalyticsProvider>
         </ThemeProvider>
       </body>
     </html>

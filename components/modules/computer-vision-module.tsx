@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -30,6 +30,7 @@ export default function ComputerVisionModule() {
   const [sceneDescription, setSceneDescription] = useState<string>("")
   const [tags, setTags] = useState<string[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [currentImage, setCurrentImage] = useState<string>("/images/ph-cv-traffic.png")
 
   // Image context scenarios for AI processing
   const imageContexts = {
@@ -39,6 +40,15 @@ export default function ComputerVisionModule() {
     city: "Manila skyline showing modern skyscrapers alongside historic buildings and parks",
     disaster: "Aftermath of a typhoon in the Philippines with flooding and emergency responders helping residents",
   }
+
+  // Update the current image when detection mode changes
+  useEffect(() => {
+    setCurrentImage(`/images/ph-cv-${detectionMode}.png`)
+    // Reset detections when changing images
+    setDetections([])
+    setSceneDescription("")
+    setTags([])
+  }, [detectionMode])
 
   const processImage = async () => {
     setIsProcessing(true)
@@ -57,7 +67,7 @@ export default function ComputerVisionModule() {
             id: idx,
             label: obj.label,
             confidence: obj.confidence,
-            boundingBox: obj.boundingBox,
+            boundingBox: generateBoundingBox(detectionMode),
           }))
 
         setDetections(filteredObjects)
@@ -78,6 +88,57 @@ export default function ComputerVisionModule() {
     }
   }
 
+  // Generate realistic bounding boxes based on the scene type
+  const generateBoundingBox = (sceneType: string) => {
+    // Base dimensions for the image container
+    const baseWidth = 300
+    const baseHeight = 200
+
+    // Generate random position and size within reasonable bounds
+    const x = Math.floor(Math.random() * (baseWidth - 100)) + 20
+    const y = Math.floor(Math.random() * (baseHeight - 100)) + 20
+
+    // Size varies based on scene type
+    let width, height
+
+    switch (sceneType) {
+      case "traffic":
+        // Vehicles and people tend to be medium-sized objects
+        width = Math.floor(Math.random() * 60) + 40
+        height = Math.floor(Math.random() * 40) + 30
+        break
+      case "rural":
+        // Mix of buildings (larger) and people (smaller)
+        width = Math.floor(Math.random() * 80) + 30
+        height = Math.floor(Math.random() * 60) + 30
+        break
+      case "market":
+        // Mostly smaller objects (produce, people)
+        width = Math.floor(Math.random() * 40) + 20
+        height = Math.floor(Math.random() * 30) + 20
+        break
+      case "city":
+        // Buildings (larger)
+        width = Math.floor(Math.random() * 100) + 50
+        height = Math.floor(Math.random() * 120) + 60
+        break
+      case "disaster":
+        // Mix of damaged structures and people
+        width = Math.floor(Math.random() * 70) + 40
+        height = Math.floor(Math.random() * 50) + 30
+        break
+      default:
+        width = Math.floor(Math.random() * 60) + 30
+        height = Math.floor(Math.random() * 40) + 30
+    }
+
+    // Ensure bounding box stays within image
+    if (x + width > baseWidth) width = baseWidth - x - 5
+    if (y + height > baseHeight) height = baseHeight - y - 5
+
+    return { x, y, width, height }
+  }
+
   const getDetectionColor = (label: string) => {
     const colors: Record<string, string> = {
       person: "#ef4444",
@@ -90,6 +151,15 @@ export default function ComputerVisionModule() {
       tree: "#22c55e",
       sign: "#06b6d4",
       animal: "#eab308",
+      house: "#a855f7",
+      fruit: "#84cc16",
+      vegetable: "#14b8a6",
+      fish: "#0ea5e9",
+      vendor: "#f43f5e",
+      skyscraper: "#6366f1",
+      debris: "#dc2626",
+      water: "#0284c7",
+      rescuer: "#059669",
     }
 
     // Check if label contains any of the keys
@@ -100,6 +170,19 @@ export default function ComputerVisionModule() {
     }
 
     return "#64748b" // default color
+  }
+
+  // Generate scene-specific object labels
+  const getSceneSpecificLabels = (scene: string) => {
+    const sceneLabels = {
+      traffic: ["Car", "Jeepney", "Motorcycle", "Pedestrian", "Traffic Light", "Road Sign"],
+      rural: ["Nipa Hut", "Farmer", "Rice Field", "Carabao", "Coconut Tree", "Bamboo Fence"],
+      market: ["Vendor", "Fish", "Fruit", "Vegetable", "Customer", "Market Stall"],
+      city: ["Skyscraper", "Office Building", "Park", "Vehicle", "Pedestrian", "Monument"],
+      disaster: ["Damaged Structure", "Flood Water", "Debris", "Rescue Worker", "Emergency Vehicle", "Evacuee"],
+    }
+
+    return sceneLabels[scene as keyof typeof sceneLabels] || sceneLabels.traffic
   }
 
   return (
@@ -192,7 +275,7 @@ export default function ComputerVisionModule() {
                     <div className="relative w-full h-full">
                       <div className="absolute inset-0 flex items-center justify-center">
                         <Image
-                          src={`/images/ph-cv-${detectionMode}.jpg`}
+                          src={currentImage || "/placeholder.svg"}
                           alt={`Philippine ${detectionMode} scene`}
                           fill
                           className="object-cover rounded"
@@ -362,8 +445,8 @@ export default function ComputerVisionModule() {
                         or rural villages
                       </li>
                       <li>
-                        <strong>AI Analysis</strong>: The Groq LLM analyzes the context and generates realistic computer
-                        vision results
+                        <strong>AI Analysis</strong>: The InnovateHub AI analyzes the context and generates realistic
+                        computer vision results
                       </li>
                       <li>
                         <strong>Object Detection</strong>: The system identifies and locates objects in the scene
@@ -376,7 +459,7 @@ export default function ComputerVisionModule() {
 
                     <div className="mt-4 p-3 bg-red-900/20 rounded">
                       <p className="text-white/90 text-sm">
-                        <strong>Note:</strong> This demo uses the Groq LLM to simulate how computer vision AI would
+                        <strong>Note:</strong> This demo uses InnovateHub AI to simulate how computer vision AI would
                         analyze Philippine scenes. In a production system, specialized computer vision models like YOLO,
                         Faster R-CNN, or SSD would be used for actual image processing.
                       </p>

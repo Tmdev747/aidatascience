@@ -22,7 +22,7 @@ interface AnalyticsProviderProps {
   children: ReactNode
 }
 
-export function AnalyticsProvider({ children }: AnalyticsProviderProps) {
+export default function AnalyticsProvider({ children }: AnalyticsProviderProps) {
   const [moduleVisits, setModuleVisits] = useState<Record<string, number>>({})
   const [quizAttempts, setQuizAttempts] = useState(0)
   const [quizScores, setQuizScores] = useState<number[]>([])

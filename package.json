@@ -68,9 +68,9 @@
     "@emotion/is-prop-valid": "latest",
     "@react-three/drei": "latest",
     "framer-motion": "latest",
-    "@ai-sdk/groq": "latest",
-    "ai": "latest",
-    "qr-code-styling": "latest"
+    "qr-code-styling": "latest",
+    "@ai-sdk/anthropic": "latest",
+    "@ai-sdk/openai": "latest"
   },
   "devDependencies": {
     "@types/node": "^22",

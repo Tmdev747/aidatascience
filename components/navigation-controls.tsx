@@ -1,88 +1,58 @@
 "use client"
 
-import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Home, Brain, Network, MessageSquare, Eye, BarChart3, HelpCircle, Menu, X } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
-import { useMobile } from "@/hooks/use-mobile"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 
 interface NavigationControlsProps {
-  currentModule: string
-  setCurrentModule: (module: string) => void
+  activeModule: string
+  onModuleChange: (module: string) => void
+  modules: string[]
 }
 
-export default function NavigationControls({ currentModule, setCurrentModule }: NavigationControlsProps) {
-  const [menuOpen, setMenuOpen] = useState(false)
-  const { toast } = useToast()
-  const isMobile = useMobile()
+export default function NavigationControls({ activeModule, onModuleChange, modules }: NavigationControlsProps) {
+  const currentIndex = modules.indexOf(activeModule)
+  const hasPrevious = currentIndex > 0
+  const hasNext = currentIndex < modules.length - 1
 
-  const modules = [
-    { id: "intro", name: "Introduction", icon: <Home className="mr-2" /> },
-    { id: "machine-learning", name: "Machine Learning", icon: <Brain className="mr-2" /> },
-    { id: "neural-networks", name: "Neural Networks", icon: <Network className="mr-2" /> },
-    { id: "nlp", name: "Natural Language Processing", icon: <MessageSquare className="mr-2" /> },
-    { id: "computer-vision", name: "Computer Vision", icon: <Eye className="mr-2" /> },
-    { id: "applications", name: "Philippine Applications", icon: <BarChart3 className="mr-2" /> },
-    { id: "quiz", name: "Assessment", icon: <HelpCircle className="mr-2" /> },
-  ]
-
-  const toggleMenu = () => {
-    setMenuOpen(!menuOpen)
+  const handlePrevious = () => {
+    if (hasPrevious) {
+      onModuleChange(modules[currentIndex - 1])
+    }
   }
 
-  const handleModuleChange = (moduleId: string) => {
-    setCurrentModule(moduleId)
-    if (isMobile) {
-      setMenuOpen(false)
+  const handleNext = () => {
+    if (hasNext) {
+      onModuleChange(modules[currentIndex + 1])
     }
-
-    toast({
-      title: "Module Changed",
-      description: `Navigating to ${modules.find((m) => m.id === moduleId)?.name}`,
-      duration: 2000,
-    })
   }
 
   return (
-    <>
-      {/* Mobile menu button */}
-      {isMobile && (
-        <Button
-          variant="outline"
-          size="icon"
-          className="fixed top-4 right-4 z-50 bg-slate-800 text-white"
-          onClick={toggleMenu}
-        >
-          {menuOpen ? <X /> : <Menu />}
+    <div className="fixed bottom-0 left-0 right-0 bg-slate-900/80 backdrop-blur-md border-t border-slate-800 py-4 z-40">
+      <div className="container mx-auto px-4 flex justify-between items-center">
+        <Button variant="outline" onClick={handlePrevious} disabled={!hasPrevious} className="flex items-center">
+          <ChevronLeft className="mr-2 h-4 w-4" />
+          Previous
         </Button>
-      )}
 
-      {/* Navigation menu */}
-      <div
-        className={`fixed left-0 top-0 h-full bg-slate-800/90 backdrop-blur-sm z-40 transition-all duration-300 ${
-          isMobile ? (menuOpen ? "w-64" : "w-0 overflow-hidden") : "w-64"
-        }`}
-      >
-        <div className="p-4">
-          <h2 className="text-xl font-bold text-white mb-6 mt-4">AI in Data Science</h2>
-
-          <div className="space-y-2">
-            {modules.map((module) => (
-              <Button
-                key={module.id}
-                variant={currentModule === module.id ? "default" : "ghost"}
-                className={`w-full justify-start ${
-                  currentModule === module.id ? "bg-blue-600 hover:bg-blue-700" : "text-white"
-                }`}
-                onClick={() => handleModuleChange(module.id)}
-              >
-                {module.icon}
-                {module.name}
-              </Button>
-            ))}
-          </div>
+        <div className="flex space-x-1">
+          {modules.map((module, index) => (
+            <div
+              key={module}
+              className={`h-2 w-2 rounded-full ${index === currentIndex ? "bg-blue-500" : "bg-slate-600"}`}
+            />
+          ))}
         </div>
+
+        <Button
+          variant={hasNext ? "default" : "outline"}
+          onClick={handleNext}
+          disabled={!hasNext}
+          className={`flex items-center ${hasNext ? "bg-blue-600 hover:bg-blue-700" : ""}`}
+        >
+          Next
+          <ChevronRight className="ml-2 h-4 w-4" />
+        </Button>
       </div>
-    </>
+    </div>
   )
 }

@@ -292,7 +292,7 @@ export default function NLPModule() {
                   <div className="p-4 bg-slate-900 rounded-lg">
                     <h3 className="text-lg font-semibold text-white mb-2">How NLP Works</h3>
                     <p className="text-white/80 mb-4">
-                      This demonstration uses the Groq AI API to perform real-time natural language processing:
+                      This demonstration uses the InnovateHub AI to perform real-time natural language processing:
                     </p>
 
                     <ol className="space-y-3 text-white/80 list-decimal pl-5">
@@ -314,7 +314,7 @@ export default function NLPModule() {
 
                     <div className="mt-4 p-3 bg-pink-900/20 rounded">
                       <p className="text-white/90 text-sm">
-                        <strong>Note:</strong> This demo uses the Llama-3 model through Groq's API to provide real
+                        <strong>Note:</strong> This demo uses Claude 3 Opus through InnovateHub AI's API to provide real
                         natural language processing capabilities. Try entering text in Filipino languages like Tagalog
                         to see how the model processes it!
                       </p>
