@@ -62,6 +62,9 @@ export default function EmbedPage() {
   // Set initial state based on URL parameter or default to "smart-farming"
   const [activeApp, setActiveApp] = useState("smart-farming")
 
+  // Check if compact mode is enabled
+  const isCompact = searchParams.get("compact") === "true"
+
   // Effect to handle URL parameters when component mounts
   useEffect(() => {
     const demoParam = searchParams.get("demo")
@@ -78,14 +81,23 @@ export default function EmbedPage() {
   const currentApp = aiApps.find((app) => app.id === activeApp) || aiApps[0]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-2">
+    <div
+      className={`min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 ${isCompact ? "p-1" : "p-2"}`}
+    >
       <div className="max-w-full mx-auto">
-        {/* App Selection Tabs */}
-        <Tabs value={activeApp} onValueChange={setActiveApp} className="mb-3">
-          <TabsList className="bg-slate-800 w-full justify-start overflow-x-auto">
+        {/* App Selection Tabs - Compact version uses smaller text and padding */}
+        <Tabs value={activeApp} onValueChange={setActiveApp} className={isCompact ? "mb-1" : "mb-3"}>
+          <TabsList
+            className={`bg-slate-800 w-full justify-start overflow-x-auto ${isCompact ? "h-8 min-h-8 p-0.5" : ""}`}
+          >
             {aiApps.map((app) => (
-              <TabsTrigger key={app.id} value={app.id} className="min-w-max">
-                <span className="mr-2">{app.icon}</span> {app.name}
+              <TabsTrigger
+                key={app.id}
+                value={app.id}
+                className={`min-w-max ${isCompact ? "text-xs py-0.5 px-1.5 h-7" : ""}`}
+              >
+                <span className={isCompact ? "" : "mr-2"}>{app.icon}</span>
+                {isCompact ? "" : app.name}
               </TabsTrigger>
             ))}
           </TabsList>
@@ -95,24 +107,39 @@ export default function EmbedPage() {
         <motion.div key={activeApp} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
           <Card className="bg-slate-800/50 border-slate-700 overflow-hidden">
             <div className={`h-2 bg-gradient-to-r ${currentApp.color}`}></div>
-            <CardContent className="p-3">
-              <div className="mb-3">
-                <div className="flex items-center mb-1">
-                  <span className="text-xl mr-2">{currentApp.icon}</span>
-                  <h2 className="text-lg font-bold text-white">{currentApp.name}</h2>
+            <CardContent className={isCompact ? "p-1" : "p-3"}>
+              {/* Header - Hide description in compact mode */}
+              {!isCompact && (
+                <div className="mb-3">
+                  <div className="flex items-center mb-1">
+                    <span className="text-xl mr-2">{currentApp.icon}</span>
+                    <h2 className="text-lg font-bold text-white">{currentApp.name}</h2>
+                  </div>
+                  <p className="text-white/80 text-sm">{currentApp.description}</p>
                 </div>
-                <p className="text-white/80 text-sm">{currentApp.description}</p>
-              </div>
+              )}
 
-              <div className="bg-slate-900 rounded-lg p-3 overflow-hidden">{currentApp.component}</div>
+              {/* In compact mode, just show a minimal header */}
+              {isCompact && (
+                <div className="flex items-center mb-1">
+                  <span className="text-sm mr-1">{currentApp.icon}</span>
+                  <h2 className="text-sm font-medium text-white truncate">{currentApp.name}</h2>
+                </div>
+              )}
+
+              <div className={`bg-slate-900 rounded-lg ${isCompact ? "p-1" : "p-3"} overflow-hidden`}>
+                {currentApp.component}
+              </div>
             </CardContent>
           </Card>
         </motion.div>
 
-        {/* Footer */}
-        <div className="mt-2 text-center text-white/50 text-xs">
-          <p>© {new Date().getFullYear()} InnovateHub AI | BSU | Educational Use Only</p>
-        </div>
+        {/* Footer - Hide in compact mode */}
+        {!isCompact && (
+          <div className="mt-2 text-center text-white/50 text-xs">
+            <p>© {new Date().getFullYear()} InnovateHub AI | BSU | Educational Use Only</p>
+          </div>
+        )}
       </div>
     </div>
   )

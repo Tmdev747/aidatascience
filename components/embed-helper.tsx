@@ -6,21 +6,45 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Copy, Check } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
 
 export default function EmbedHelper() {
   const [copied, setCopied] = useState(false)
   const [embedSize, setEmbedSize] = useState("medium")
-  const [selectedDemo, setSelectedDemo] = useState("")
+  const [selectedDemo, setSelectedDemo] = useState("default")
+  const [compactMode, setCompactMode] = useState(false)
 
   const baseUrl = typeof window !== "undefined" ? window.location.origin : ""
-  const embedUrl = `${baseUrl}/embed${selectedDemo && selectedDemo !== "default" ? `?demo=${selectedDemo}` : ""}`
+
+  // Build URL with parameters
+  let embedUrl = `${baseUrl}/embed`
+  const params = new URLSearchParams()
+
+  if (selectedDemo && selectedDemo !== "default") {
+    params.append("demo", selectedDemo)
+  }
+
+  if (compactMode) {
+    params.append("compact", "true")
+  }
+
+  const queryString = params.toString()
+  if (queryString) {
+    embedUrl += `?${queryString}`
+  }
 
   const embedSizes = {
     small: { width: 400, height: 500 },
     medium: { width: 600, height: 700 },
     large: { width: 800, height: 900 },
     responsive: { width: "100%", height: 700 },
+    compact: { width: 300, height: 400 },
   }
+
+  // If compact mode is selected, use the compact size
+  const sizeKey = compactMode && embedSize !== "responsive" ? "compact" : embedSize
+  const currentSize = embedSizes[sizeKey as keyof typeof embedSizes]
 
   const demoOptions = [
     { value: "default", label: "Default (Smart Farming)" },
@@ -30,8 +54,6 @@ export default function EmbedHelper() {
     { value: "disaster-response", label: "Disaster Response AI" },
     { value: "agriculture-ai", label: "Agriculture AI Visualization" },
   ]
-
-  const currentSize = embedSizes[embedSize as keyof typeof embedSizes]
 
   const iframeCode = `<iframe 
   src="${embedUrl}" 
@@ -86,6 +108,22 @@ export default function EmbedHelper() {
             </Select>
           </div>
         </div>
+
+        <div className="flex items-center space-x-2 mb-4">
+          <Switch id="compact-mode" checked={compactMode} onCheckedChange={setCompactMode} />
+          <Label htmlFor="compact-mode" className="text-white">
+            Compact Mode (for very limited spaces)
+          </Label>
+        </div>
+
+        {compactMode && (
+          <div className="bg-amber-900/20 border border-amber-800/30 rounded-md p-3 mb-4">
+            <p className="text-amber-200 text-sm">
+              Compact mode provides a minimal interface optimized for small spaces. It uses simplified controls, reduced
+              padding, and icon-only navigation.
+            </p>
+          </div>
+        )}
 
         <div className="bg-slate-900 p-4 rounded-md mb-4">
           <pre className="text-white/80 text-sm overflow-x-auto whitespace-pre-wrap">{iframeCode}</pre>
