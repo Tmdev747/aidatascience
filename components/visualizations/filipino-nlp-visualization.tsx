@@ -336,7 +336,9 @@ export default function FilipinoNLPVisualization() {
 
                     <div className="bg-slate-700/50 p-4 rounded-lg">
                       <h5 className="font-medium text-white mb-1">English Translation:</h5>
-                      <p className="text-white/90 border-l-2 border-green-500 pl-3 py-1">{result}</p>
+                      <p className="text-white/90 border-l-2 border-green-500 pl-3 py-1">
+                        {typeof result === "string" ? result : JSON.stringify(result)}
+                      </p>
                     </div>
 
                     <div className="text-xs text-white/50 text-center">
