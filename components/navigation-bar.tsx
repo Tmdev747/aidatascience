@@ -20,6 +20,7 @@ export default function NavigationBar() {
     { name: "Visualizations", path: "/visualizations" },
     { name: "Image Gallery", path: "/image-gallery" },
     { name: "Settings", path: "/settings" },
+    { name: "Embed", path: "/embed-help" },
   ]
 
   return (

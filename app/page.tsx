@@ -13,7 +13,6 @@ import QuizModule from "@/components/modules/quiz-module"
 import LoadingScreen from "@/components/loading-screen"
 import { useAnalytics } from "@/components/analytics-provider"
 import Image from "next/image"
-import NavigationButton from "@/components/navigation-button"
 
 export default function Home() {
   const [currentModule, setCurrentModule] = useState("intro")
@@ -74,27 +73,6 @@ export default function Home() {
     }
   }
 
-  const getNextModule = () => {
-    switch (currentModule) {
-      case "intro":
-        return "machine-learning"
-      case "machine-learning":
-        return "neural-networks"
-      case "neural-networks":
-        return "nlp"
-      case "nlp":
-        return "computer-vision"
-      case "computer-vision":
-        return "applications"
-      case "applications":
-        return "quiz"
-      case "quiz":
-        return "intro"
-      default:
-        return "machine-learning"
-    }
-  }
-
   if (isLoading) {
     return <LoadingScreen />
   }
@@ -117,8 +95,6 @@ export default function Home() {
           </motion.div>
         </AnimatePresence>
       </main>
-
-      <NavigationButton nextModule={getNextModule()} />
 
       <footer className="fixed bottom-0 w-full bg-slate-900/80 backdrop-blur-sm py-2 px-4 text-center text-white/70 text-sm">
         <div className="flex items-center justify-center gap-2">
